@@ -1640,7 +1640,6 @@ body.home-page {
     text-align: center !important;
     background:
       linear-gradient(135deg, rgba(5,38,66,.95), rgba(11,58,102,.84)),
-      url('/public/logo mahragan.png') center / 58% no-repeat !important;
   }
 
   .hero-actions {
