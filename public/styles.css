@@ -749,8 +749,8 @@ tr:hover td { background: #fbfdff; }
 .header-right .header-logo {
   grid-column: 3 !important;
   grid-row: 1 !important;
-  width: 62px !important;
-  height: 62px !important;
+  width: 80px !important;
+  height: 80px !important;
   object-fit: contain !important;
   justify-self: center !important;
 }
