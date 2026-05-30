@@ -1132,16 +1132,14 @@ tr:hover td { background: #fbfdff; }
 }
 .hero-panel, .hero-card {
   border-radius: 28px;
-  background: rgba(255,255,255,.88);
+  background: rgba(255,255,255,.99);
   box-shadow: var(--shadow);
   border: 1px solid rgba(223,231,242,.9);
   padding: clamp(24px, 5vw, 52px);
 }
 .hero-panel {
   color: white;
-  background:
-    linear-gradient(135deg, rgba(5,38,66,.92), rgba(11,58,102,.78)),
-    url('/public/logo mahragan.png') center/contain no-repeat;
+  
   min-height: 520px;
   display: flex;
   flex-direction: column;
