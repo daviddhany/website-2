@@ -1,56 +1,114 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>مهرجان حبة حنطة</title>
   <link rel="icon" href="/public/logo-left.png" type="image/png">
+  <meta charset="utf-8">
+  <title>مهرجان حبة حنطة</title>
   <link rel="stylesheet" href="/public/styles.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
-<body class="home-page">
-  <header class="site-header">
-    <a href="/" class="logo-link" aria-label="الرئيسية">
-      <img src="/public/logo-left.png" class="header-logo" alt="شعار المهرجان">
-    </a>
-    <div class="header-title">
-      <h2>مهرجان حبة حنطة</h2>
-      <p>تسجيل ومتابعة الأنشطة بسهولة</p>
-    </div>
-    <div class="header-right">
-      <nav class="header-actions" aria-label="روابط الموقع">
-        <a class="btn-nav login" href="/public/register.html">إنشاء حساب</a>
-        <a class="btn-nav" href="/public/student-login.html">تسجيل دخول</a>
+<body class="landing-body">
+  <div id="landingApp">
+    <header class="landing-nav">
+      <a href="/" class="brand">
+        <img src="/public/logo-left.png" alt="شعار المهرجان">
+        <span>مهرجان حبة حنطة</span>
+      </a>
+      <nav>
+        <a href="#services">الخدمات</a>
+        <a href="#features">المميزات</a>
+        <a href="/public/api-docs.html">API Docs</a>
+        <a href="/public/reports.html">التقارير</a>
       </nav>
-      <img src="/public/logo-right.png" class="header-logo" alt="شعار الكنيسة">
-    </div>
-  </header>
+    </header>
 
-  <main class="home-hero">
-    <section class="hero-panel">
-      <div class="hero-kicker">مهرجان 2026</div>
-      <h1 class="hero-title">سجّل بياناتك<br>واختار نشاطك</h1>
-      <p class="hero-text">
-        منصة بسيطة ومنظمة لتسجيل المخدومين، رفع الملفات المطلوبة، ومتابعة الأنشطة والفرق من الموبايل أو الكمبيوتر.
-      </p>
-      <div class="hero-actions">
-        <a class="btn" href="/public/register.html">ابدأ التسجيل</a>
-        <a class="btn secondary" href="/public/student-login.html">عندي حساب</a>
-      </div>
-    </section>
+    <main class="landing-main">
+      <section class="hero-section">
+        <div class="hero-copy">
+          <span class="hero-badge">منصة تنظيم وإدارة المهرجان</span>
+          <h1>خدمة الخدام والمخدومين في مكان واحد</h1>
+          <p>
+            منصة إلكترونية تساعد في تسجيل المخدومين، رفع المستندات، تنظيم الفرق،
+            متابعة الأنشطة، واستخراج التقارير بشكل أسهل وأسرع.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-action" href="/public/register.html">تسجيل مخدوم</a>
+            <a class="secondary-action" href="/public/student-login.html">دخول مخدوم</a>
+            <a class="secondary-action" href="/public/teacher-login.html">دخول خادم</a>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <img src="/public/logo mahragan.png" alt="شعار مهرجان حبة حنطة">
+          <div class="stat-grid">
+            <div v-for="stat in stats" class="stat-card">
+              <strong>{{ stat.value }}</strong>
+              <span>{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    <aside class="hero-card">
-      <img src="/public/logo mahragan.png" alt="شعار مهرجان حبة حنطة">
-      <h2>كل حاجة في مكان واحد</h2>
-      <ul>
-        <li>تسجيل بيانات المخدومين أونلاين</li>
-        <li>اختيار الأنشطة ومعرفة الإجمالي</li>
-        <li>رفع الصورة وشهادة الميلاد بسهولة</li>
-        <li>لوحات متابعة للخدام والإدارة</li>
-      </ul>
-      <a class="teacher-small teacher-link" href="/public/teacher-login.html">دخول الخدام</a>
-    </aside>
-  </main>
+      <section id="services" class="landing-section">
+        <div class="section-heading">
+          <span>Services</span>
+          <h2>الخدمات التي يوفرها النظام</h2>
+        </div>
+        <div class="modern-grid">
+          <article class="modern-card" v-for="service in services">
+            <div class="card-icon">{{ service.icon }}</div>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.text }}</p>
+          </article>
+        </div>
+      </section>
 
-  <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+      <section id="features" class="landing-section split-section">
+        <div>
+          <span class="hero-badge">Why this system?</span>
+          <h2>لماذا نستخدم النظام؟</h2>
+          <p>
+            النظام يقلل الورق والزحمة، ويحافظ على البيانات منظمة، ويعطي الخدام صورة واضحة
+            عن التسجيلات والفرق والأنشطة.
+          </p>
+        </div>
+        <div class="feature-list">
+          <div v-for="feature in features">✓ {{ feature }}</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="landing-footer">
+      مهرجان حبة حنطة © 2026 — منصة إلكترونية لخدمة تنظيم وإدارة المهرجان.
+    </footer>
+  </div>
+
+  <script>
+    Vue.createApp({
+      data() {
+        return {
+          stats: [
+            { value: '1', label: 'تسجيل إلكتروني' },
+            { value: '2', label: 'لوحات تحكم' },
+            { value: '3', label: 'تقارير وتحليلات' }
+          ],
+          services: [
+            { icon: '📋', title: 'تسجيل المخدومين', text: 'تسجيل بيانات الطلاب ورفع المستندات المطلوبة إلكترونياً.' },
+            { icon: '👥', title: 'إدارة الفرق', text: 'توزيع المخدومين على الفرق ومتابعة المشاركات.' },
+            { icon: '🏆', title: 'متابعة الأنشطة', text: 'إدارة الأنشطة والمسابقات ومتابعة الاشتراكات والنتائج.' },
+            { icon: '📊', title: 'تقارير وتحليلات', text: 'إحصائيات فورية عن التسجيلات، الدفع، الأنشطة، والفرق.' }
+          ],
+          features: [
+            'توفير وقت ومجهود كبير',
+            'تنظيم كامل للبيانات',
+            'رفع المستندات إلكترونياً',
+            'متابعة التسجيلات من الموبايل والكمبيوتر',
+            'API موثق لتسهيل التطوير والصيانة',
+            'تقارير CSV وتحليلات داخل لوحة التحكم'
+          ]
+        };
+      }
+    }).mount('#landingApp');
+  </script>
 </body>
 </html>

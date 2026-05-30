@@ -91,3 +91,12 @@ Before using this with real student data:
 - Do not expose uploads publicly without access controls.
 - Use a secure MongoDB account and network restrictions.
 - Back up the database regularly.
+
+
+## Latest improvements
+
+- Frontend powered homepage with Vue 3 CDN for a more modern component-based landing page.
+- Added responsive landing page sections for services, features, and quick actions.
+- Added API documentation page at `/public/api-docs.html` and JSON endpoint at `/api/docs`.
+- Added reports and analytics dashboard at `/public/reports.html` backed by `/api/admin/analytics`.
+- Added KPI cards and simple visual charts for students, payments, teams, classes, and activities.

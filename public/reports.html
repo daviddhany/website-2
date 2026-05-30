@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>التقارير والتحليلات</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+</head>
+<body>
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title"><h2>التقارير والتحليلات</h2><p>لوحة متابعة متقدمة للمهرجان</p></div>
+  <div class="header-right"><nav class="header-actions"><a class="btn-export" href="/public/teacher-dashboard.html">لوحة الخادم</a><a class="btn-export" href="/api/admin/export/students.csv">تحميل CSV</a></nav></div>
+</header>
+<main>
+  <section class="card">
+    <h2>ملخص سريع</h2>
+    <div id="kpis" class="report-kpis"></div>
+  </section>
+  <section class="card">
+    <h2>توزيع المخدومين حسب الخدمة</h2>
+    <div id="classes" class="chart-list"></div>
+  </section>
+  <section class="card">
+    <h2>أكثر الأنشطة اختياراً</h2>
+    <div id="activities" class="chart-list"></div>
+  </section>
+  <p id="msg"></p>
+</main>
+<script>
+function row(label, value, max) {
+  const width = max ? Math.max(5, Math.round((value / max) * 100)) : 0;
+  return `<div class="chart-row"><strong>${label}</strong> <span>${value}</span><div class="chart-bar" style="width:${width}%"></div></div>`;
+}
+async function loadAnalytics() {
+  const msg = document.getElementById('msg');
+  try {
+    const res = await fetch('/api/admin/analytics');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'فشل تحميل التقارير');
+    document.getElementById('kpis').innerHTML = `
+      <div class="report-kpi"><strong>${data.totalStudents}</strong><span>إجمالي المخدومين</span></div>
+      <div class="report-kpi"><strong>${data.completedSubmissions}</strong><span>استمارات مكتملة</span></div>
+      <div class="report-kpi"><strong>${data.paymentConfirmed}</strong><span>دفع مؤكد</span></div>
+      <div class="report-kpi"><strong>${data.totalTeams}</strong><span>فرق منشأة</span></div>`;
+    const maxClass = Math.max(1, ...data.studentsByClass.map(x => x.count));
+    document.getElementById('classes').innerHTML = data.studentsByClass.map(x => row(x.name, x.count, maxClass)).join('') || '<p>لا توجد بيانات.</p>';
+    const maxAct = Math.max(1, ...data.topActivities.map(x => x.count));
+    document.getElementById('activities').innerHTML = data.topActivities.map(x => row(x.name, x.count, maxAct)).join('') || '<p>لا توجد بيانات.</p>';
+  } catch (err) {
+    msg.className = 'error';
+    msg.textContent = err.message;
+  }
+}
+loadAnalytics();
+</script>
+</body>
+</html>

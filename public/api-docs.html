@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Documentation</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+</head>
+<body>
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title"><h2>API Documentation</h2><p>توثيق مختصر لمسارات النظام الأساسية</p></div>
+</header>
+<main>
+  <section class="card">
+    <h2>Authentication</h2>
+    <div class="api-box">POST /api/auth/student/login<br>POST /api/auth/teacher/login<br>POST /api/auth/logout</div>
+  </section>
+  <section class="card">
+    <h2>Students</h2>
+    <div class="api-box">POST /api/students/register<br>GET /api/students/me<br>POST /api/students/me/photo<br>POST /api/students/me/birth-certificate<br>POST /api/students/me/payment-proof</div>
+  </section>
+  <section class="card">
+    <h2>Teacher / Admin</h2>
+    <div class="api-box">GET /api/admin/students<br>GET /api/admin/analytics<br>GET /api/admin/export/students.csv<br>GET /api/teams<br>POST /api/teams<br>GET /api/categories<br>POST /api/categories<br>GET /api/activities<br>POST /api/activities</div>
+  </section>
+  <section class="card">
+    <h2>JSON Documentation Endpoint</h2>
+    <p>يمكن قراءة التوثيق كـ JSON من هذا المسار:</p>
+    <div class="api-box">GET /api/docs</div>
+  </section>
+</main>
+</body>
+</html>
