@@ -2180,10 +2180,9 @@ body.home-page  {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 12px !important;
-  margin-top: 28px !important;
+  margin-top: 8px !important;
   width: auto !important;
 }
-
 .hero-actions .btn  {
   width: auto !important;
   min-width: 165px !important;
