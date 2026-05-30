@@ -2362,3 +2362,37 @@ body.home-page  {
     color:#fff !important;
 }
 
+
+
+/* FIX HEADER BUTTONS POSITION */
+.site-header{
+display:grid!important;
+grid-template-columns:90px 1fr 90px!important;
+grid-template-rows:auto!important;
+align-items:center!important;
+}
+
+.header-actions{
+grid-column:2!important;
+grid-row:1!important;
+justify-content:flex-start!important;
+margin-top:0!important;
+position:absolute!important;
+left:110px!important;
+top:50%!important;
+transform:translateY(-50%)!important;
+}
+
+.header-title{
+grid-column:2!important;
+}
+
+@media (max-width:768px){
+.header-actions{
+position:static!important;
+transform:none!important;
+grid-column:1 / -1!important;
+justify-content:center!important;
+margin-top:8px!important;
+}
+}
