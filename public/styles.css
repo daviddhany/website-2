@@ -2180,7 +2180,7 @@ body.home-page  {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 12px !important;
-  margin-top: 8px !important;
+  margin-top: 12px !important;
   width: auto !important;
 }
 .hero-actions .btn  {
