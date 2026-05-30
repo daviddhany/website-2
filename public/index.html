@@ -1,114 +1,125 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/public/logo-left.png" type="image/png">
   <meta charset="utf-8">
-  <title>مهرجان حبة حنطة</title>
+  <title>Mahragan Janaklees</title>
   <link rel="stylesheet" href="/public/styles.css">
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <style>
+    /* Reset and font */
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+        background: transparent; /* make sure nothing blocks the logo */
+
+    }
+
+    /* Fixed background logo */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('/public/logo mahragan.png') no-repeat center center;
+      background-size: contain; /* use cover if you want full-screen */
+      z-index: -1; /* behind content */
+    }
+
+    /* Center container */
+    .center-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Content box */
+    .box {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.6); /* semi-transparent to show logo behind */
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 250px;
+      margin: 10px auto;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .register { background: #052642; }
+    .student { background: #052642; }
+
+    /* Bottom section */
+    .bottom-section {
+      margin-top: 200px;
+      text-align: center;
+      padding-bottom: 40px;
+    }
+
+    .teacher-small {
+      display: inline-block;
+      padding: 8px 14px;
+      font-size: 13px;
+      background: #888;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+
+    .teacher-small:hover {
+      background: #666;
+    }
+
+    footer.app-footer {
+      text-align: center;
+      padding: 20px 0;
+      color: #555;
+    }
+
+  </style>
 </head>
-<body class="landing-body">
-  <div id="landingApp">
-    <header class="landing-nav">
-      <a href="/" class="brand">
-        <img src="/public/logo-left.png" alt="شعار المهرجان">
-        <span>مهرجان حبة حنطة</span>
+
+<body>
+
+  <div class="center-container">
+    <div class="box">
+      <h1>مهرجان حبة حنطة</h1>
+
+      <a class="btn register" href="/public/register.html">
+        إنشاء حساب
       </a>
-      <nav>
-        <a href="#services">الخدمات</a>
-        <a href="#features">المميزات</a>
-        <a href="/public/api-docs.html">API Docs</a>
-        <a href="/public/reports.html">التقارير</a>
-      </nav>
-    </header>
 
-    <main class="landing-main">
-      <section class="hero-section">
-        <div class="hero-copy">
-          <span class="hero-badge">منصة تنظيم وإدارة المهرجان</span>
-          <h1>خدمة الخدام والمخدومين في مكان واحد</h1>
-          <p>
-            منصة إلكترونية تساعد في تسجيل المخدومين، رفع المستندات، تنظيم الفرق،
-            متابعة الأنشطة، واستخراج التقارير بشكل أسهل وأسرع.
-          </p>
-          <div class="hero-actions">
-            <a class="primary-action" href="/public/register.html">تسجيل مخدوم</a>
-            <a class="secondary-action" href="/public/student-login.html">دخول مخدوم</a>
-            <a class="secondary-action" href="/public/teacher-login.html">دخول خادم</a>
-          </div>
-        </div>
-        <div class="hero-panel">
-          <img src="/public/logo mahragan.png" alt="شعار مهرجان حبة حنطة">
-          <div class="stat-grid">
-            <div v-for="stat in stats" class="stat-card">
-              <strong>{{ stat.value }}</strong>
-              <span>{{ stat.label }}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="services" class="landing-section">
-        <div class="section-heading">
-          <span>Services</span>
-          <h2>الخدمات التي يوفرها النظام</h2>
-        </div>
-        <div class="modern-grid">
-          <article class="modern-card" v-for="service in services">
-            <div class="card-icon">{{ service.icon }}</div>
-            <h3>{{ service.title }}</h3>
-            <p>{{ service.text }}</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="features" class="landing-section split-section">
-        <div>
-          <span class="hero-badge">Why this system?</span>
-          <h2>لماذا نستخدم النظام؟</h2>
-          <p>
-            النظام يقلل الورق والزحمة، ويحافظ على البيانات منظمة، ويعطي الخدام صورة واضحة
-            عن التسجيلات والفرق والأنشطة.
-          </p>
-        </div>
-        <div class="feature-list">
-          <div v-for="feature in features">✓ {{ feature }}</div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="landing-footer">
-      مهرجان حبة حنطة © 2026 — منصة إلكترونية لخدمة تنظيم وإدارة المهرجان.
-    </footer>
+      <a class="btn student" href="/public/student-login.html">
+        تسجيل دخول
+      </a>
+    </div>
   </div>
 
-  <script>
-    Vue.createApp({
-      data() {
-        return {
-          stats: [
-            { value: '1', label: 'تسجيل إلكتروني' },
-            { value: '2', label: 'لوحات تحكم' },
-            { value: '3', label: 'تقارير وتحليلات' }
-          ],
-          services: [
-            { icon: '📋', title: 'تسجيل المخدومين', text: 'تسجيل بيانات الطلاب ورفع المستندات المطلوبة إلكترونياً.' },
-            { icon: '👥', title: 'إدارة الفرق', text: 'توزيع المخدومين على الفرق ومتابعة المشاركات.' },
-            { icon: '🏆', title: 'متابعة الأنشطة', text: 'إدارة الأنشطة والمسابقات ومتابعة الاشتراكات والنتائج.' },
-            { icon: '📊', title: 'تقارير وتحليلات', text: 'إحصائيات فورية عن التسجيلات، الدفع، الأنشطة، والفرق.' }
-          ],
-          features: [
-            'توفير وقت ومجهود كبير',
-            'تنظيم كامل للبيانات',
-            'رفع المستندات إلكترونياً',
-            'متابعة التسجيلات من الموبايل والكمبيوتر',
-            'API موثق لتسهيل التطوير والصيانة',
-            'تقارير CSV وتحليلات داخل لوحة التحكم'
-          ]
-        };
-      }
-    }).mount('#landingApp');
-  </script>
-</body>
+  <!-- Scroll down area -->
+  <div class="bottom-section">
+    <a class="teacher-small" href="/public/teacher-login.html">
+      خادم
+    </a>
+  </div>
+
+<footer class="app-footer" dir="ltr">
+  © 2026 David Hany. All rights reserved.
+</footer></body>
 </html>

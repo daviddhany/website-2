@@ -28,7 +28,6 @@ const categoryRoutes = require('./routes/categories');
 const adminRoutes = require('./routes/admin');
 const { requireTeacher } = require('./middleware/auth');
 const teamRoutes = require('./routes/teams');
-const docsRoutes = require('./routes/docs');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -110,7 +109,6 @@ app.use('/api/activities', activityRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/docs', docsRoutes);
 
 // View protected uploaded files.
 // Only logged-in teachers can open these.
