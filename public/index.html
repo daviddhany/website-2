@@ -1,30 +1,114 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مهرجان الكرازة المرقسية</title>
-<link rel="stylesheet" href="styles.css">
-<style>
-body{margin:0;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f4f6f9}
-.login-card{background:#fff;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.12);width:90%;max-width:500px;text-align:center}
-.logo{max-width:120px;margin-bottom:15px}
-h1{margin-bottom:10px}
-p{color:#666;margin-bottom:25px}
-.btn{display:block;text-decoration:none;padding:15px;margin:12px 0;border-radius:12px;font-weight:bold}
-.student{background:#2563eb;color:#fff}
-.teacher{background:#16a34a;color:#fff}
-.register{background:#f59e0b;color:#fff}
-</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+  <meta charset="utf-8">
+  <title>مهرجان حبة حنطة</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
-<body>
-<div class="login-card">
-<img src="logo-left.png" class="logo">
-<h1>مهرجان الكرازة المرقسية</h1>
-<p>مرحباً بكم في منصة إدارة وتسجيل المهرجان</p>
-<a class="btn student" href="/student-login.html">تسجيل دخول مخدوم</a>
-<a class="btn teacher" href="/teacher-login.html">تسجيل دخول خادم</a>
-<a class="btn register" href="/register.html">تسجيل جديد</a>
-</div>
+<body class="landing-body">
+  <div id="landingApp">
+    <header class="landing-nav">
+      <a href="/" class="brand">
+        <img src="/public/logo-left.png" alt="شعار المهرجان">
+        <span>مهرجان حبة حنطة</span>
+      </a>
+      <nav>
+        <a href="#services">الخدمات</a>
+        <a href="#features">المميزات</a>
+        <a href="/public/api-docs.html">API Docs</a>
+        <a href="/public/reports.html">التقارير</a>
+      </nav>
+    </header>
+
+    <main class="landing-main">
+      <section class="hero-section">
+        <div class="hero-copy">
+          <span class="hero-badge">منصة تنظيم وإدارة المهرجان</span>
+          <h1>خدمة الخدام والمخدومين في مكان واحد</h1>
+          <p>
+            منصة إلكترونية تساعد في تسجيل المخدومين، رفع المستندات، تنظيم الفرق،
+            متابعة الأنشطة، واستخراج التقارير بشكل أسهل وأسرع.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-action" href="/public/register.html">تسجيل مخدوم</a>
+            <a class="secondary-action" href="/public/student-login.html">دخول مخدوم</a>
+            <a class="secondary-action" href="/public/teacher-login.html">دخول خادم</a>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <img src="/public/logo mahragan.png" alt="شعار مهرجان حبة حنطة">
+          <div class="stat-grid">
+            <div v-for="stat in stats" class="stat-card">
+              <strong>{{ stat.value }}</strong>
+              <span>{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="services" class="landing-section">
+        <div class="section-heading">
+          <span>Services</span>
+          <h2>الخدمات التي يوفرها النظام</h2>
+        </div>
+        <div class="modern-grid">
+          <article class="modern-card" v-for="service in services">
+            <div class="card-icon">{{ service.icon }}</div>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.text }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="features" class="landing-section split-section">
+        <div>
+          <span class="hero-badge">Why this system?</span>
+          <h2>لماذا نستخدم النظام؟</h2>
+          <p>
+            النظام يقلل الورق والزحمة، ويحافظ على البيانات منظمة، ويعطي الخدام صورة واضحة
+            عن التسجيلات والفرق والأنشطة.
+          </p>
+        </div>
+        <div class="feature-list">
+          <div v-for="feature in features">✓ {{ feature }}</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="landing-footer">
+      مهرجان حبة حنطة © 2026 — منصة إلكترونية لخدمة تنظيم وإدارة المهرجان.
+    </footer>
+  </div>
+
+  <script>
+    Vue.createApp({
+      data() {
+        return {
+          stats: [
+            { value: '1', label: 'تسجيل إلكتروني' },
+            { value: '2', label: 'لوحات تحكم' },
+            { value: '3', label: 'تقارير وتحليلات' }
+          ],
+          services: [
+            { icon: '📋', title: 'تسجيل المخدومين', text: 'تسجيل بيانات الطلاب ورفع المستندات المطلوبة إلكترونياً.' },
+            { icon: '👥', title: 'إدارة الفرق', text: 'توزيع المخدومين على الفرق ومتابعة المشاركات.' },
+            { icon: '🏆', title: 'متابعة الأنشطة', text: 'إدارة الأنشطة والمسابقات ومتابعة الاشتراكات والنتائج.' },
+            { icon: '📊', title: 'تقارير وتحليلات', text: 'إحصائيات فورية عن التسجيلات، الدفع، الأنشطة، والفرق.' }
+          ],
+          features: [
+            'توفير وقت ومجهود كبير',
+            'تنظيم كامل للبيانات',
+            'رفع المستندات إلكترونياً',
+            'متابعة التسجيلات من الموبايل والكمبيوتر',
+            'API موثق لتسهيل التطوير والصيانة',
+            'تقارير CSV وتحليلات داخل لوحة التحكم'
+          ]
+        };
+      }
+    }).mount('#landingApp');
+  </script>
 </body>
 </html>
