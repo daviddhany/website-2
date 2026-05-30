@@ -1,111 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>منصة مهرجان الكرازة المرقسية</title>
-  <link rel="icon" href="/public/logo-left.png" type="image/png" />
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Tahoma", Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background:
-        radial-gradient(circle at top right, rgba(37,99,235,.16), transparent 35%),
-        radial-gradient(circle at bottom left, rgba(245,158,11,.18), transparent 35%),
-        #f4f7fb;
-    }
-    .login-card {
-      width: 100%;
-      max-width: 460px;
-      background: rgba(255,255,255,.94);
-      border: 1px solid rgba(255,255,255,.7);
-      border-radius: 26px;
-      padding: 34px 26px;
-      text-align: center;
-      box-shadow: 0 22px 55px rgba(15,23,42,.13);
-    }
-    .logos {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-    .logos img {
-      width: 82px;
-      height: 82px;
-      object-fit: contain;
-    }
-    h1 {
-      margin: 0 0 10px;
-      color: #102a43;
-      font-size: clamp(1.45rem, 5vw, 2rem);
-      line-height: 1.45;
-    }
-    .subtitle {
-      color: #52616b;
-      margin: 0 0 26px;
-      font-size: 1rem;
-      line-height: 1.8;
-    }
-    .actions {
-      display: grid;
-      gap: 13px;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      text-decoration: none;
-      border-radius: 16px;
-      padding: 15px 18px;
-      color: #fff;
-      font-size: 1.05rem;
-      font-weight: 700;
-      transition: transform .18s ease, box-shadow .18s ease;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 22px rgba(15,23,42,.14);
-    }
-    .student { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-    .teacher { background: linear-gradient(135deg, #16a34a, #15803d); }
-    .register { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .footer-note {
-      margin-top: 22px;
-      color: #7b8794;
-      font-size: .88rem;
-    }
-    @media (max-width: 480px) {
-      body { padding: 14px; }
-      .login-card { padding: 28px 18px; border-radius: 22px; }
-      .logos img { width: 68px; height: 68px; }
-      .btn { padding: 14px; font-size: 1rem; }
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مهرجان حبة حنطة</title>
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+  <link rel="stylesheet" href="/public/styles.css">
 </head>
-<body>
-  <main class="login-card">
-    <div class="logos">
-      <img src="/public/logo-left.png" alt="شعار المهرجان">
-      <img src="/public/logo-right.png" alt="شعار الكنيسة">
+<body class="home-page">
+  <header class="site-header">
+    <a href="/" class="logo-link" aria-label="الرئيسية">
+      <img src="/public/logo-left.png" class="header-logo" alt="شعار المهرجان">
+    </a>
+    <div class="header-title">
+      <h2>مهرجان حبة حنطة</h2>
+      <p>تسجيل ومتابعة الأنشطة بسهولة</p>
     </div>
-
-    <h1>منصة مهرجان الكرازة المرقسية</h1>
-    <p class="subtitle">مرحباً بكم في منصة إدارة وتسجيل المهرجان</p>
-
-    <div class="actions">
-      <a class="btn student" href="/public/student-login.html">تسجيل دخول مخدوم</a>
-      <a class="btn teacher" href="/public/teacher-login.html">تسجيل دخول خادم</a>
-      <a class="btn register" href="/public/register.html">تسجيل جديد</a>
+    <div class="header-right">
+      <nav class="header-actions" aria-label="روابط الموقع">
+        <a class="btn-nav login" href="/public/register.html">إنشاء حساب</a>
+        <a class="btn-nav" href="/public/student-login.html">تسجيل دخول</a>
+      </nav>
+      <img src="/public/logo-right.png" class="header-logo" alt="شعار الكنيسة">
     </div>
+  </header>
 
-    <div class="footer-note">خدمة الخدام والمخدومين في مكان واحد</div>
+  <main class="home-hero">
+    <section class="hero-panel">
+      <div class="hero-kicker">مهرجان 2026</div>
+      <h1 class="hero-title">سجّل بياناتك<br>واختار نشاطك</h1>
+      <p class="hero-text">
+        منصة بسيطة ومنظمة لتسجيل المخدومين، رفع الملفات المطلوبة، ومتابعة الأنشطة والفرق من الموبايل أو الكمبيوتر.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="/public/register.html">ابدأ التسجيل</a>
+        <a class="btn secondary" href="/public/student-login.html">عندي حساب</a>
+      </div>
+    </section>
+
+    <aside class="hero-card">
+      <img src="/public/logo mahragan.png" alt="شعار مهرجان حبة حنطة">
+      <h2>كل حاجة في مكان واحد</h2>
+      <ul>
+        <li>تسجيل بيانات المخدومين أونلاين</li>
+        <li>اختيار الأنشطة ومعرفة الإجمالي</li>
+        <li>رفع الصورة وشهادة الميلاد بسهولة</li>
+        <li>لوحات متابعة للخدام والإدارة</li>
+      </ul>
+      <a class="teacher-small teacher-link" href="/public/teacher-login.html">دخول الخدام</a>
+    </aside>
   </main>
+
+  <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
 </body>
 </html>
