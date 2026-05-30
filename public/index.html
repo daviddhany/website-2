@@ -1,125 +1,56 @@
 <!doctype html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/public/logo-left.png" type="image/png">
   <meta charset="utf-8">
-  <title>Mahragan Janaklees</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مهرجان حبة حنطة</title>
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
   <link rel="stylesheet" href="/public/styles.css">
-
-  <style>
-    /* Reset and font */
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-        background: transparent; /* make sure nothing blocks the logo */
-
-    }
-
-    /* Fixed background logo */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('/public/logo mahragan.png') no-repeat center center;
-      background-size: contain; /* use cover if you want full-screen */
-      z-index: -1; /* behind content */
-    }
-
-    /* Center container */
-    .center-container {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* Content box */
-    .box {
-      text-align: center;
-      background: rgba(255, 255, 255, 0.6); /* semi-transparent to show logo behind */
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      margin-bottom: 30px;
-    }
-
-    /* Buttons */
-    .btn {
-      display: block;
-      width: 250px;
-      margin: 10px auto;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      color: white;
-    }
-
-    .register { background: #052642; }
-    .student { background: #052642; }
-
-    /* Bottom section */
-    .bottom-section {
-      margin-top: 200px;
-      text-align: center;
-      padding-bottom: 40px;
-    }
-
-    .teacher-small {
-      display: inline-block;
-      padding: 8px 14px;
-      font-size: 13px;
-      background: #888;
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
-    }
-
-    .teacher-small:hover {
-      background: #666;
-    }
-
-    footer.app-footer {
-      text-align: center;
-      padding: 20px 0;
-      color: #555;
-    }
-
-  </style>
 </head>
-
-<body>
-
-  <div class="center-container">
-    <div class="box">
-      <h1>مهرجان حبة حنطة</h1>
-
-      <a class="btn register" href="/public/register.html">
-        إنشاء حساب
-      </a>
-
-      <a class="btn student" href="/public/student-login.html">
-        تسجيل دخول
-      </a>
-    </div>
-  </div>
-
-  <!-- Scroll down area -->
-  <div class="bottom-section">
-    <a class="teacher-small" href="/public/teacher-login.html">
-      خادم
+<body class="home-page">
+  <header class="site-header">
+    <a href="/" class="logo-link" aria-label="الرئيسية">
+      <img src="/public/logo-left.png" class="header-logo" alt="شعار المهرجان">
     </a>
-  </div>
+    <div class="header-title">
+      <h2>مهرجان حبة حنطة</h2>
+      <p>تسجيل ومتابعة الأنشطة بسهولة</p>
+    </div>
+    <div class="header-right">
+      <nav class="header-actions" aria-label="روابط الموقع">
+        <a class="btn-nav login" href="/public/register.html">إنشاء حساب</a>
+        <a class="btn-nav" href="/public/student-login.html">تسجيل دخول</a>
+      </nav>
+      <img src="/public/logo-right.png" class="header-logo" alt="شعار الكنيسة">
+    </div>
+  </header>
 
-<footer class="app-footer" dir="ltr">
-  © 2026 David Hany. All rights reserved.
-</footer></body>
+  <main class="home-hero">
+    <section class="hero-panel">
+      <div class="hero-kicker">مهرجان 2026</div>
+      <h1 class="hero-title">سجّل بياناتك<br>واختار نشاطك</h1>
+      <p class="hero-text">
+        منصة بسيطة ومنظمة لتسجيل المخدومين، رفع الملفات المطلوبة، ومتابعة الأنشطة والفرق من الموبايل أو الكمبيوتر.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="/public/register.html">ابدأ التسجيل</a>
+        <a class="btn secondary" href="/public/student-login.html">عندي حساب</a>
+      </div>
+    </section>
+
+    <aside class="hero-card">
+      <img src="/public/logo mahragan.png" alt="شعار مهرجان حبة حنطة">
+      <h2>كل حاجة في مكان واحد</h2>
+      <ul>
+        <li>تسجيل بيانات المخدومين أونلاين</li>
+        <li>اختيار الأنشطة ومعرفة الإجمالي</li>
+        <li>رفع الصورة وشهادة الميلاد بسهولة</li>
+        <li>لوحات متابعة للخدام والإدارة</li>
+      </ul>
+      <a class="teacher-small teacher-link" href="/public/teacher-login.html">دخول الخدام</a>
+    </aside>
+  </main>
+
+  <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+</body>
 </html>
