@@ -18,6 +18,7 @@
   <div class="header-right">
     <nav class="header-actions">
       <a href="/api/admin/export/students.csv" class="btn-export">Export excel</a>
+      <a href="/public/reports.html" class="btn-export">Reports</a>
       <a href="/public/admin-teachers.html" class="btn-export" id="manageTeachersBtn">Manage Teachers</a>
       <button type="button" onclick="logout()" class="btn-logout">Logout</button>
     </nav>
@@ -31,12 +32,22 @@
     <div id="studentsSection" class="collapsible-body">
     <h2>المخدومين</h2>
 
-    <label>
-      بحث
-      <input id="search" placeholder="Name, national ID, or student ID">
-    </label>
+    <div class="search-panel">
+      <label>
+        بحث
+        <input id="search" placeholder="Name, national ID, or student ID">
+      </label>
 
-    <button onclick="loadStudents()">بحث</button>
+      <label>
+        بحث بالنشاط
+        <select id="studentActivityFilter">
+          <option value="">كل الأنشطة</option>
+        </select>
+      </label>
+
+      <button onclick="loadStudents()">بحث</button>
+      <button type="button" class="secondary-action" onclick="clearStudentFilters()">مسح الفلتر</button>
+    </div>
 
     <div style="overflow:auto">
       <table>
@@ -339,6 +350,15 @@ async function loadActivities() {
     <option value="${escapeAttr(a._id)}">${escapeHtml(a.name)}</option>
   `).join('');
 
+  const studentActivityFilter = document.getElementById('studentActivityFilter');
+  if (studentActivityFilter) {
+    const currentValue = studentActivityFilter.value;
+    studentActivityFilter.innerHTML = '<option value="">كل الأنشطة</option>' + activities.map(a => `
+      <option value="${escapeAttr(a._id)}">${escapeHtml(a.name)} - ${escapeHtml(a.category || '')}</option>
+    `).join('');
+    studentActivityFilter.value = currentValue;
+  }
+
   const activityList = document.getElementById('activityList');
   if (activityList) {
     activityList.innerHTML = activities.map(a => `
@@ -435,15 +455,25 @@ async function togglePaymentConfirmed(id, checked) {
 
 async function loadStudents() {
   const q = document.getElementById('search').value;
+  const activityId = document.getElementById('studentActivityFilter') ? document.getElementById('studentActivityFilter').value : '';
   const rows = document.getElementById('rows');
   rows.innerHTML = '<tr><td colspan="15" class="loading">Loading students...</td></tr>';
 
+  const params = new URLSearchParams();
+  if (q) params.set('search', q);
+  if (activityId) params.set('activityId', activityId);
+
   let students = [];
   try {
-    students = await api('/api/admin/students?search=' + encodeURIComponent(q));
+    students = await api('/api/admin/students?' + params.toString());
     cachedStudents = students;
   } catch (err) {
     rows.innerHTML = `<tr><td colspan="15" class="error">${escapeHtml(err.message)}</td></tr>`;
+    return;
+  }
+
+  if (!students.length) {
+    rows.innerHTML = '<tr><td colspan="15" class="muted">لا يوجد مخدومين مطابقين للبحث أو النشاط المختار.</td></tr>';
     return;
   }
 
@@ -486,6 +516,13 @@ async function loadStudents() {
     </tr>
   `).join('');
 }
+function clearStudentFilters() {
+  document.getElementById('search').value = '';
+  const activityFilter = document.getElementById('studentActivityFilter');
+  if (activityFilter) activityFilter.value = '';
+  loadStudents();
+}
+
 async function changeStudentPassword(id) {
   const newPassword = prompt('Enter new student password:');
   if (!newPassword) return;
@@ -927,6 +964,11 @@ async function changeStudentPassword(id) {
 
   alert('Student password changed');
 }
+const studentActivityFilter = document.getElementById('studentActivityFilter');
+if (studentActivityFilter) {
+  studentActivityFilter.addEventListener('change', loadStudents);
+}
+
 async function start() {
   try {
     await loadMe();

@@ -116,18 +116,26 @@ router.get('/students', requireTeacher, async (req, res) => {
 
   const { filter } = result;
 
+  const andFilters = [];
+
   if (req.query.search) {
     const q = new RegExp(req.query.search, 'i');
 
-    filter.$and = [
-      {
-        $or: [
-          { fullName: q },
-          { nationalId: q },
-          { studentCode: q }
-        ]
-      }
-    ];
+    andFilters.push({
+      $or: [
+        { fullName: q },
+        { nationalId: q },
+        { studentCode: q }
+      ]
+    });
+  }
+
+  if (req.query.activityId) {
+    andFilters.push({ activities: req.query.activityId });
+  }
+
+  if (andFilters.length) {
+    filter.$and = andFilters;
   }
 
   const students = await Student.find(filter)

@@ -10,50 +10,139 @@
 <body>
 <header class="site-header">
   <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
-  <div class="header-title"><h2>التقارير والتحليلات</h2><p>لوحة متابعة متقدمة للمهرجان</p></div>
-  <div class="header-right"><nav class="header-actions"><a class="btn-export" href="/public/teacher-dashboard.html">لوحة الخادم</a><a class="btn-export" href="/api/admin/export/students.csv">تحميل CSV</a></nav></div>
+  <div class="header-title">
+    <h2>التقارير والتحليلات</h2>
+    <p>متابعة أرقام التسجيل والأنشطة والدفع</p>
+  </div>
+  <div class="header-right">
+    <nav class="header-actions">
+      <a href="/public/teacher-dashboard.html" class="btn-export">Dashboard</a>
+      <button type="button" onclick="logout()" class="btn-logout">Logout</button>
+    </nav>
+    <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+  </div>
 </header>
-<main>
-  <section class="card">
-    <h2>ملخص سريع</h2>
-    <div id="kpis" class="report-kpis"></div>
+
+<main id="reportsApp" v-cloak>
+  <section class="reports-hero card">
+    <div>
+      <p class="portal-kicker">Reports & Analytics</p>
+      <h1>لوحة تحليلات متقدمة</h1>
+      <p>الأرقام بتتحسب مباشرة من بيانات المخدومين والأنشطة الحالية.</p>
+    </div>
+    <button type="button" @click="loadData">تحديث البيانات</button>
   </section>
-  <section class="card">
-    <h2>توزيع المخدومين حسب الخدمة</h2>
-    <div id="classes" class="chart-list"></div>
+
+  <section v-if="loading" class="card loading">جاري تحميل التقارير...</section>
+  <section v-if="error" class="card error">{{ error }}</section>
+
+  <section v-if="!loading && !error" class="stats-grid">
+    <article class="stat-card"><span>إجمالي المخدومين</span><strong>{{ stats.total }}</strong></article>
+    <article class="stat-card"><span>اكتمل التسجيل</span><strong>{{ stats.complete }}</strong></article>
+    <article class="stat-card"><span>الدفع مؤكد</span><strong>{{ stats.paid }}</strong></article>
+    <article class="stat-card"><span>إجمالي قيمة الأنشطة</span><strong>{{ stats.totalMoney }} ج</strong></article>
   </section>
-  <section class="card">
-    <h2>أكثر الأنشطة اختياراً</h2>
-    <div id="activities" class="chart-list"></div>
+
+  <section v-if="!loading && !error" class="reports-grid">
+    <article class="card">
+      <h2>الأنشطة الأكثر اختيارًا</h2>
+      <div class="bar-list">
+        <div v-for="item in topActivities" :key="item.name" class="bar-row">
+          <span>{{ item.name }}</span>
+          <strong>{{ item.count }}</strong>
+          <div><em :style="{width: percent(item.count, maxActivityCount) + '%'}"></em></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>التوزيع حسب الخدمة</h2>
+      <div class="bar-list">
+        <div v-for="item in classStats" :key="item.name" class="bar-row">
+          <span>{{ item.name }}</span>
+          <strong>{{ item.count }}</strong>
+          <div><em :style="{width: percent(item.count, maxClassCount) + '%'}"></em></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>حالة التسجيل</h2>
+      <div class="analytics-list">
+        <p><b>مكتمل:</b> {{ stats.complete }}</p>
+        <p><b>غير مكتمل:</b> {{ stats.incomplete }}</p>
+        <p><b>نسبة الاكتمال:</b> {{ completionRate }}%</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>حالة الدفع</h2>
+      <div class="analytics-list">
+        <p><b>مدفوع:</b> {{ stats.paid }}</p>
+        <p><b>غير مؤكد:</b> {{ stats.unpaid }}</p>
+        <p><b>نسبة التأكيد:</b> {{ paymentRate }}%</p>
+      </div>
+    </article>
   </section>
-  <p id="msg"></p>
 </main>
+
+<script src="/public/app.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script>
-function row(label, value, max) {
-  const width = max ? Math.max(5, Math.round((value / max) * 100)) : 0;
-  return `<div class="chart-row"><strong>${label}</strong> <span>${value}</span><div class="chart-bar" style="width:${width}%"></div></div>`;
-}
-async function loadAnalytics() {
-  const msg = document.getElementById('msg');
-  try {
-    const res = await fetch('/api/admin/analytics');
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'فشل تحميل التقارير');
-    document.getElementById('kpis').innerHTML = `
-      <div class="report-kpi"><strong>${data.totalStudents}</strong><span>إجمالي المخدومين</span></div>
-      <div class="report-kpi"><strong>${data.completedSubmissions}</strong><span>استمارات مكتملة</span></div>
-      <div class="report-kpi"><strong>${data.paymentConfirmed}</strong><span>دفع مؤكد</span></div>
-      <div class="report-kpi"><strong>${data.totalTeams}</strong><span>فرق منشأة</span></div>`;
-    const maxClass = Math.max(1, ...data.studentsByClass.map(x => x.count));
-    document.getElementById('classes').innerHTML = data.studentsByClass.map(x => row(x.name, x.count, maxClass)).join('') || '<p>لا توجد بيانات.</p>';
-    const maxAct = Math.max(1, ...data.topActivities.map(x => x.count));
-    document.getElementById('activities').innerHTML = data.topActivities.map(x => row(x.name, x.count, maxAct)).join('') || '<p>لا توجد بيانات.</p>';
-  } catch (err) {
-    msg.className = 'error';
-    msg.textContent = err.message;
-  }
-}
-loadAnalytics();
+Vue.createApp({
+  data() {
+    return {
+      loading: true,
+      error: '',
+      students: []
+    };
+  },
+  computed: {
+    stats() {
+      const total = this.students.length;
+      const complete = this.students.filter(s => s.submissionComplete).length;
+      const paid = this.students.filter(s => s.paymentConfirmed).length;
+      const totalMoney = this.students.reduce((sum, s) => sum + (s.activities || []).reduce((a, x) => a + Number(x.price || 0), 0), 0);
+      return { total, complete, incomplete: total - complete, paid, unpaid: total - paid, totalMoney };
+    },
+    topActivities() {
+      const map = new Map();
+      this.students.forEach(s => (s.activities || []).forEach(a => {
+        const name = a.name || 'بدون اسم';
+        map.set(name, (map.get(name) || 0) + 1);
+      }));
+      return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 10);
+    },
+    classStats() {
+      const map = new Map();
+      this.students.forEach(s => {
+        const name = s.className || 'غير محدد';
+        map.set(name, (map.get(name) || 0) + 1);
+      });
+      return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
+    },
+    maxActivityCount() { return Math.max(1, ...this.topActivities.map(x => x.count)); },
+    maxClassCount() { return Math.max(1, ...this.classStats.map(x => x.count)); },
+    completionRate() { return this.stats.total ? Math.round((this.stats.complete / this.stats.total) * 100) : 0; },
+    paymentRate() { return this.stats.total ? Math.round((this.stats.paid / this.stats.total) * 100) : 0; }
+  },
+  methods: {
+    percent(value, max) { return Math.max(6, Math.round((value / max) * 100)); },
+    async loadData() {
+      this.loading = true;
+      this.error = '';
+      try {
+        this.students = await api('/api/admin/students');
+      } catch (err) {
+        this.error = err.message || 'فشل تحميل التقارير';
+      } finally {
+        this.loading = false;
+      }
+    }
+  },
+  mounted() { this.loadData(); }
+}).mount('#reportsApp');
 </script>
+<footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
 </body>
 </html>
