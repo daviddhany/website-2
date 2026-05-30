@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <title>Servant Login</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+</head>
+
+<body>
+
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title"><h2>تسجيل دخول الخدام</h2></div>
+  <div class="header-right">
+    <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <form id="form">
+      <label>
+        رقم التليفون
+        <input name="phone" required pattern="\d{11}" maxlength="11" placeholder="11 رقم">
+      </label>
+
+      <label>
+        كلمة السر
+        <input name="password" type="password" required>
+      </label>
+
+      <button>تسجيل دخول</button>
+      <p id="msg"></p>
+    </form>
+  </section>
+</main>
+
+<script src="/public/app.js"></script>
+
+<script>
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const body = Object.fromEntries(new FormData(e.target));
+
+  try {
+    await api('/api/auth/teacher/login', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+
+    location.href = '/public/teacher-dashboard.html';
+
+  } catch (err) {
+    message('msg', err.message, false);
+  }
+});
+</script>
+
+  <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+</body>
+</html>

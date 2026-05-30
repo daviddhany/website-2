@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تسجيل دخول</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: linear-gradient(to right, #052642, #07345e);
+      color: white;
+    }
+
+    .site-header .logo-link img,
+    .site-header .header-logo {
+      height: 50px;
+    }
+
+    .header-title h2 {
+      margin: 0 15px;
+      font-size: 20px;
+    }
+
+    .header-actions .btn-nav {
+      text-decoration: none;
+      color: white;
+      background-color: #0a2e55;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .header-actions .btn-nav:hover {
+      background-color: #104073;
+    }
+
+    /* Main card */
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: right;
+    }
+
+    .card label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .card input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .card button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #052642;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .card button:hover {
+      background-color: #07345e;
+    }
+
+    #msg {
+      margin-top: 10px;
+      color: red;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px 0;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <a href="/" class="logo-link"><img src="/public/logo-left.png" alt="Logo"></a>
+    <div class="header-title"><h2>مهرجان حبة حنطة</h2></div>
+    <div class="header-right">
+      <nav class="header-actions">
+        <a href="/" class="btn-nav">Home</a>
+      </nav>
+      <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+    </div>
+  </header>
+
+  <!-- Login Card -->
+  <main>
+    <section class="card">
+      <form id="form">
+        <label>كود المخدوم
+          <input name="studentCode" required placeholder="مثال: BY3-2026-0001">
+        </label>
+        <label>كلمة السر
+          <input name="password" type="password" required>
+        </label>
+        <button type="submit">Login</button>
+        <p id="msg"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="/public/app.js"></script>
+  <script>
+    // Form submission
+    document.getElementById('form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target));
+      body.studentCode = String(body.studentCode || '').trim().toUpperCase();
+      if (!body.studentCode) {
+        message('msg', 'Student code is required', false);
+        return;
+      }
+      const button = e.target.querySelector('button');
+      button.disabled = true;
+      button.textContent = 'Logging in...';
+      try {
+        const data = await api('/api/auth/student/login', { method:'POST', body: JSON.stringify(body) });
+        location.href = '/public/student-dashboard.html';
+      } catch(err) {
+        message('msg', err.message, false);
+        button.disabled = false;
+        button.textContent = 'Login';
+      }
+    });
+  </script>
+
+  <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+</body>
+
+</html>

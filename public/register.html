@@ -1,0 +1,160 @@
+<!doctype html><html><head>
+  <meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><title>إنشاء حساب</title><link rel="stylesheet" href="/public/styles.css">
+<link rel="icon" href="/public/logo-left.png" type="image/png"></head>
+<body>
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title"><h2>مهرجان حبة حنطة</h2></div>
+  <div class="header-right">
+    <nav class="header-actions">
+      <a href="/" class="btn-nav">الرئيسية</a>
+      <a href="/public/student-login.html" class="btn-nav login">تسجيل دخول</a>
+    </nav>
+    <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+  </div>
+</header>
+<main><section class="card"><div id="registrationClosedBox" class="error" style="display:none;margin-bottom:12px;">تم إغلاق التسجيل حالياً بواسطة الإدارة.</div><form id="form">
+<label>الاسم ثلاثي<input name="fullName" required></label>
+<label>النوع<select name="gender" required><option value="male">ذكر</option><option value="female">انثى</option></select></label>
+<label>تاريخ الميلاد<input name="birthDate" type="date" required></label>
+
+<label>الخدمة
+ <select name="className" id="className" required>
+  <option value="">اختر الخدمة</option>
+  <option value="يوحنا">يوحنا</option>
+  <option value="ابوسيفين">ابوسيفين</option>
+  <option value="العذراء">العذراء</option>
+  <option value="خمسة و ستة">خمسة و ستة</option>
+  <option value="إعدادي">إعدادي</option>
+</select>
+  <label>السنة</label>
+<select name="studentYear" id="studentYear" required>
+  <option value="">اختر السنة</option>
+  <option value="اولى إبتدائي">اولى إبتدائي</option>
+  <option value="تانية إبتدائي">تانية إبتدائي</option>
+  <option value="ثالثة إبتدائي">ثالثة إبتدائي</option>
+  <option value="رابعة إبتدائي">رابعة إبتدائي</option>
+  <option value="خمسة إبتدائي">خمسة إبتدائي</option>
+  <option value="سادسة إبتدائي">سادسة إبتدائي</option>
+  <option value="اولى اعدادي">اولى إعدادي</option>
+  <option value="تانية اعدادي">تانية إعدادي</option>
+  <option value="ثالثة اعدادي">ثالثة إعدادي</option>
+</select>
+</label>
+<label>كلمة السر*<input name="password" type="password" required></label>
+<label>رقم ولي الامر*<input name="parentPhone" required pattern="\d{11}" maxlength="11" placeholder="11 رقم"></label>
+<label>رقم تليفون المخدوم - اختياري<input name="studentPhone" pattern="\d{11}" maxlength="11" placeholder="11 رقم"></label>
+<label>العنوان*<textarea name="address" required></textarea></label>
+<label>هل يمكنه السفر في حالة التأهل؟
+  <select name="canTravel" required>
+    <option value="">اختر</option>
+    <option value="true">نعم</option>
+    <option value="false">لا</option>
+  </select>
+</label>
+<button id="submitBtn">حفظ البيانات</button><p id="msg"></p></form></section></main>
+<footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+<script src="/public/app.js"></script><script>
+
+
+async function checkRegistrationStatus() {
+  try {
+    const settings = await api('/api/students/registration-status');
+
+    if (!settings.registrationOpen) {
+      const box = document.getElementById('registrationClosedBox');
+      const form = document.getElementById('form');
+      const button = document.getElementById('submitBtn');
+
+      if (box) box.style.display = 'block';
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'التسجيل مغلق حالياً';
+      }
+
+      if (form) {
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+          input.disabled = true;
+        });
+      }
+    }
+  } catch (err) {
+    // If status check fails, the server-side protection still handles registration.
+  }
+}
+
+checkRegistrationStatus();
+
+const yearOptionsByClass = {
+  'يوحنا': [
+    ['اولى إبتدائي', 'اولى إبتدائي'],
+    ['تانية إبتدائي', 'تانية إبتدائي'],
+    ['ثالثة إبتدائي', 'ثالثة إبتدائي'],
+    ['رابعة إبتدائي', 'رابعة إبتدائي']
+  ],
+  'ابوسيفين': [
+    ['اولى إبتدائي', 'اولى إبتدائي'],
+    ['تانية إبتدائي', 'تانية إبتدائي'],
+    ['ثالثة إبتدائي', 'ثالثة إبتدائي'],
+    ['رابعة إبتدائي', 'رابعة إبتدائي']
+  ],
+  'العذراء': [
+    ['اولى إبتدائي', 'اولى إبتدائي'],
+    ['تانية إبتدائي', 'تانية إبتدائي'],
+    ['ثالثة إبتدائي', 'ثالثة إبتدائي'],
+    ['رابعة إبتدائي', 'رابعة إبتدائي']
+  ],
+  'خمسة و ستة': [
+    ['خمسة إبتدائي', 'خمسة إبتدائي'],
+    ['سادسة إبتدائي', 'سادسة إبتدائي']
+  ],
+  'إعدادي': [
+    ['اولى اعدادي', 'اولى إعدادي'],
+    ['تانية اعدادي', 'تانية إعدادي'],
+    ['ثالثة اعدادي', 'ثالثة إعدادي']
+  ]
+};
+
+function updateYearOptions() {
+  const classSelect = document.getElementById('className');
+  const yearSelect = document.getElementById('studentYear');
+  const selectedClass = classSelect.value;
+  const years = yearOptionsByClass[selectedClass] || [];
+
+  yearSelect.innerHTML = '<option value="">اختر السنة</option>';
+
+  years.forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    yearSelect.appendChild(option);
+  });
+
+  yearSelect.disabled = years.length === 0;
+}
+
+document.getElementById('className').addEventListener('change', updateYearOptions);
+updateYearOptions();
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target));
+  const button = document.getElementById('submitBtn');
+
+ 
+
+  button.disabled = true;
+  button.textContent = 'جاري الحفظ...';
+  try {
+    const data = await api('/api/students/register', { method:'POST', body: JSON.stringify(body) });
+    sessionStorage.setItem('lastRegisteredStudent', JSON.stringify(data.student || {}));
+    sessionStorage.setItem('lastStudentCode', data.studentCode || '');
+    message('msg', `تم حفظ البيانات. كود المخدوم: ${data.studentCode}. سيتم فتح صفحة البيانات...`);
+    setTimeout(() => { location.href = '/public/register-success.html'; }, 700);
+  } catch(err) {
+    message('msg', err.message, false);
+    button.disabled = false;
+    button.textContent = 'حفظ البيانات';
+  }
+});
+</script></body></html>
