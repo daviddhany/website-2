@@ -1374,3 +1374,335 @@ body:has(#form) main .card form { width: 100%; }
   .portal-logos img { width: 72px; height: 72px; }
   .portal-btn { grid-template-columns: 40px 1fr; padding: 13px; }
 }
+
+/* =========================================================
+   FINAL FIX - NORMAL HOME PAGE
+   Put this at the very end of styles.css
+   ========================================================= */
+
+body.home-page {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(244,183,64,.16), transparent 28rem),
+    radial-gradient(circle at 90% 15%, rgba(19,92,159,.16), transparent 30rem),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%) !important;
+}
+
+.site-header {
+  position: relative !important;
+  top: auto !important;
+  min-height: auto !important;
+  display: grid !important;
+  grid-template-columns: 72px 1fr 72px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 10px 22px !important;
+  background: linear-gradient(135deg, #052642, #0b3a66) !important;
+  box-shadow: 0 10px 28px rgba(5,38,66,.18) !important;
+}
+
+.logo-link {
+  grid-column: 1 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.header-title {
+  grid-column: 2 !important;
+  text-align: center !important;
+  min-width: 0 !important;
+}
+
+.header-title h2 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: clamp(18px, 2vw, 26px) !important;
+  line-height: 1.25 !important;
+}
+
+.header-right {
+  grid-column: 3 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.header-actions {
+  position: absolute !important;
+  left: 22px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.header-logo,
+.header-right .header-logo,
+.site-header .logo-link img {
+  width: 62px !important;
+  height: 62px !important;
+  object-fit: contain !important;
+  padding: 4px !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,.08) !important;
+}
+
+.header-actions a,
+.header-actions button,
+.btn-nav {
+  width: auto !important;
+  min-width: 110px !important;
+  min-height: 38px !important;
+  padding: 8px 14px !important;
+  margin: 0 !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  color: #fff !important;
+  background: #0f4c81 !important;
+  box-shadow: none !important;
+}
+
+.header-actions .login,
+.btn-nav.login {
+  background: #16a34a !important;
+}
+
+.home-hero.normal-home,
+.home-hero {
+  width: min(1120px, calc(100% - 32px)) !important;
+  margin: 38px auto 24px !important;
+  min-height: auto !important;
+  flex: 1 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) 390px !important;
+  gap: 28px !important;
+  align-items: stretch !important;
+}
+
+.hero-panel,
+.hero-card {
+  border-radius: 30px !important;
+  background: rgba(255,255,255,.94) !important;
+  border: 1px solid rgba(223,231,242,.95) !important;
+  box-shadow: 0 18px 45px rgba(5,38,66,.12) !important;
+}
+
+.hero-panel {
+  min-height: 430px !important;
+  padding: clamp(30px, 5vw, 56px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  text-align: right !important;
+  color: #fff !important;
+  overflow: hidden !important;
+  background:
+    linear-gradient(135deg, rgba(5,38,66,.95), rgba(11,58,102,.82)),
+    url('/public/logo mahragan.png') left center / 45% no-repeat !important;
+}
+
+.hero-kicker {
+  margin-bottom: 12px !important;
+  color: #f4b740 !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+}
+
+.hero-title {
+  margin: 0 !important;
+  font-size: clamp(38px, 6vw, 70px) !important;
+  line-height: 1.05 !important;
+  color: #fff !important;
+}
+
+.hero-text {
+  max-width: 560px !important;
+  margin: 18px 0 0 !important;
+  color: rgba(255,255,255,.86) !important;
+  font-size: 18px !important;
+  line-height: 1.8 !important;
+}
+
+.hero-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-top: 28px !important;
+  width: auto !important;
+}
+
+.hero-actions .btn {
+  width: auto !important;
+  min-width: 165px !important;
+  min-height: 46px !important;
+  margin: 0 !important;
+  padding: 12px 22px !important;
+  border-radius: 999px !important;
+  background: #f4b740 !important;
+  color: #102033 !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+}
+
+.hero-actions .btn.secondary {
+  background: rgba(255,255,255,.16) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+}
+
+.hero-card,
+.hero-card.simple-card {
+  width: 100% !important;
+  min-height: 430px !important;
+  padding: 34px 28px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 26px !important;
+  text-align: center !important;
+}
+
+.hero-card img {
+  width: 240px !important;
+  max-width: 82% !important;
+  height: auto !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 14px 24px rgba(5,38,66,.14)) !important;
+}
+
+.teacher-small,
+.teacher-link {
+  width: auto !important;
+  min-width: 210px !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 12px 26px !important;
+  border-radius: 999px !important;
+  background: #052642 !important;
+  color: #fff !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.app-footer {
+  margin-top: auto !important;
+  padding: 16px !important;
+  text-align: center !important;
+  color: #667085 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .site-header {
+    grid-template-columns: 58px 1fr 58px !important;
+    padding: 10px 12px 76px !important;
+  }
+
+  .header-logo,
+  .header-right .header-logo,
+  .site-header .logo-link img {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  .header-actions {
+    left: 12px !important;
+    right: 12px !important;
+    top: auto !important;
+    bottom: 12px !important;
+    transform: none !important;
+    justify-content: center !important;
+  }
+
+  .home-hero.normal-home,
+  .home-hero {
+    grid-template-columns: 1fr !important;
+    margin-top: 20px !important;
+  }
+
+  .hero-panel {
+    min-height: 360px !important;
+    align-items: center !important;
+    text-align: center !important;
+    background:
+      linear-gradient(135deg, rgba(5,38,66,.95), rgba(11,58,102,.84)),
+      url('/public/logo mahragan.png') center / 58% no-repeat !important;
+  }
+
+  .hero-actions {
+    justify-content: center !important;
+  }
+
+  .hero-card,
+  .hero-card.simple-card {
+    min-height: 330px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-header {
+    grid-template-columns: 50px 1fr 50px !important;
+  }
+
+  .header-title h2 {
+    font-size: 17px !important;
+  }
+
+  .header-actions a,
+  .header-actions button,
+  .btn-nav {
+    min-width: 0 !important;
+    flex: 1 !important;
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+  }
+
+  .home-hero.normal-home,
+  .home-hero {
+    width: min(100% - 20px, 480px) !important;
+  }
+
+  .hero-panel {
+    min-height: 340px !important;
+    padding: 28px 18px !important;
+  }
+
+  .hero-title {
+    font-size: 38px !important;
+  }
+
+  .hero-text {
+    font-size: 15px !important;
+  }
+
+  .hero-actions,
+  .hero-actions .btn {
+    width: 100% !important;
+  }
+
+  .hero-card img {
+    width: 210px !important;
+  }
+
+  .teacher-small,
+  .teacher-link {
+    width: 100% !important;
+    font-size: 18px !important;
+  }
+}
