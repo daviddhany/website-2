@@ -9,13 +9,13 @@ const DEFAULT_PASSWORD = '12345678'; // غيرها قبل التشغيل لو ع
 // اكتب بيانات المخدومين هنا
 const students = [
   {
-    studentCode: 'BY3-2026-0001',
+    studentCode: '24MA001',
     fullName: 'Example Student Name Four',
     gender: 'male',
     className: 'يوحنا',
     studentYear: 'ثالثة إبتدائي',
+    entryYear: 2024,
     birthDate: '2016-05-01',
-    canTravel: true,
     parentPhone: '01234567890',
     studentPhone: '',
     address: 'Alexandria',

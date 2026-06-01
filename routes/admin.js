@@ -270,8 +270,7 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
       'parentPhone',
       'studentPhone',
       'address',
-      'birthDate',
-      'canTravel'
+      'birthDate'
     ];
 
     for (const field of allowedFields) {
@@ -366,12 +365,12 @@ router.get('/export/students.csv', requireTeacher, async (req, res) => {
     'Gender',
     'Birth Date',
     'Year',
+    'Entry Year',
     'Class',
     'Parent Phone',
     'Student Phone',
     'Address',
     'Paid',
-    'Can Travel',
     'Student Photo Link',
     'Birth Certificate Link',
     'Submission Status',
@@ -392,12 +391,12 @@ router.get('/export/students.csv', requireTeacher, async (req, res) => {
       s.gender === 'male' ? 'Male' : 'Female',
       s.birthDate ? s.birthDate.toISOString().slice(0, 10) : '',
       s.studentYear || '',
+      s.entryYear || '',
       s.className || '',
       phoneText(s.parentPhone),
       phoneText(s.studentPhone),
       s.address || '',
       s.paymentConfirmed ? 'Yes' : 'No',
-      s.canTravel ? 'Yes' : 'No',
       fileLink(s.studentPhotoPath),
       fileLink(s.birthCertificatePath),
       s.submissionComplete ? 'Complete' : 'Incomplete',

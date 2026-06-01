@@ -9,7 +9,8 @@ const {
   generateStudentCode,
   requireFields,
   normalizeClassName,
-  normalizeStudentYear
+  normalizeStudentYear,
+  getEntryYearFromStudentYear
 } = require('../utils');
 
 const router = express.Router();
@@ -80,8 +81,7 @@ router.post('/register', async (req, res) => {
       'birthDate',
       'password',
       'parentPhone',
-      'address',
-      'canTravel'
+      'address'
     ];
 
     const missing = requireFields(req.body, needed);
@@ -115,6 +115,14 @@ router.post('/register', async (req, res) => {
     const studentYear = normalizeStudentYear(
       req.body.studentYear
     );
+
+    const entryYear = getEntryYearFromStudentYear(studentYear);
+
+    if (!entryYear) {
+      return res.status(400).json({
+        error: 'السنة الدراسية غير صحيحة'
+      });
+    }
 
     const allowedYearsByClass = {
       'يوحنا': ['اولى إبتدائي', 'تانية إبتدائي', 'ثالثة إبتدائي', 'رابعة إبتدائي'],
@@ -168,10 +176,9 @@ router.post('/register', async (req, res) => {
     const studentCode = await generateStudentCode(
       req.body.gender,
       className,
-      studentYear
+      entryYear
     );
 
-    const canTravel = req.body.canTravel === 'true';
 
     const student = await Student.create({
       studentCode,
@@ -179,12 +186,12 @@ router.post('/register', async (req, res) => {
       gender: req.body.gender,
       className,
       studentYear,
+      entryYear,
       birthDate: req.body.birthDate,
       studentPhone: req.body.studentPhone || '',
       passwordHash,
       parentPhone: req.body.parentPhone,
-      address: req.body.address,
-      canTravel
+      address: req.body.address
     });
 
     res.status(201).json({
@@ -196,11 +203,11 @@ router.post('/register', async (req, res) => {
         gender: student.gender,
         className: student.className,
         studentYear: student.studentYear,
+        entryYear: student.entryYear,
         birthDate: student.birthDate ? student.birthDate.toISOString().slice(0, 10) : '',
         parentPhone: student.parentPhone,
         studentPhone: student.studentPhone,
-        address: student.address,
-        canTravel: student.canTravel
+        address: student.address
       }
     });
 
@@ -250,8 +257,7 @@ router.put('/me', requireStudent, requireRegistrationOpen, async (req, res) => {
       'parentPhone',
       'studentPhone',
       'address',
-      'birthDate',
-      'canTravel'
+      'birthDate'
     ];
 
     const updates = {};

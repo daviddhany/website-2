@@ -1,50 +1,41 @@
 const Student = require('./models/Student');
 
-async function generateStudentCode(gender, className, studentYear) {
-  const genderCode = gender === 'male' ? 'B' : 'G';
+async function generateStudentCode(gender, className, entryYear) {
+  const genderCode = gender === 'male' ? 'M' : 'F';
 
   const classCodes = {
-    'خمسة و ستة': 'K',
+    'يوحنا': 'A',
+    'يوحنا الحبيب': 'A',
+    'ابوسيفين': 'B',
+    'ابو سيفين': 'B',
+    'أبو سيفين': 'B',
+    'العذراء': 'C',
+    'خمسة و ستة': 'D',
     'إعدادي': 'E',
-    'اعدادي': 'E',
-    'يوحنا': 'Y',
-    'ابوسيفين': 'S',
-    'العذراء': 'M'
+    'اعدادي': 'E'
   };
 
   const classCode = classCodes[className];
-
-  const yearCodes = {
-    'اولى إبتدائي': '1',
-    'تانية إبتدائي': '2',
-    'ثالثة إبتدائي': '3',
-    'رابعة إبتدائي': '4',
-    'خمسة إبتدائي': '5',
-    'سادسة إبتدائي': '6',
-    'اولى اعدادي': '7',
-    'تانية اعدادي': '8',
-    'ثالثة اعدادي': '9',
-    'اولى إعدادي': '7',
-    'تانية إعدادي': '8',
-    'ثالثة إعدادي': '9'
-  };
-
-  const yearCode = yearCodes[studentYear] || '0';
+  const yearNumber = Number(entryYear);
 
   if (!classCode) {
-    throw new Error('Invalid class name');
+    throw new Error('Invalid class name for student code');
   }
 
-  const year = new Date().getFullYear();
-  const prefix = `${genderCode}${classCode}${yearCode}-${year}-`;
+  if (!Number.isInteger(yearNumber) || yearNumber < 2000 || yearNumber > 2099) {
+    throw new Error('Invalid entry year for student code');
+  }
+
+  const yearCode = String(yearNumber).slice(-2);
+  const prefix = `${yearCode}${genderCode}${classCode}`;
 
   const students = await Student.find({
-    studentCode: { $regex: `^${prefix}` }
+    studentCode: { $regex: `^${prefix}\\d{3}$` }
   }).select('studentCode');
 
   const usedNumbers = students
-    .map((s) => Number(s.studentCode.split('-').pop()))
-    .filter((n) => Number.isInteger(n));
+    .map((student) => Number(String(student.studentCode || '').slice(-3)))
+    .filter((number) => Number.isInteger(number));
 
   let nextNumber = 1;
 
@@ -52,9 +43,9 @@ async function generateStudentCode(gender, className, studentYear) {
     nextNumber++;
   }
 
-  const number = String(nextNumber).padStart(4, '0');
+  const serial = String(nextNumber).padStart(3, '0');
 
-  return `${prefix}${number}`;
+  return `${prefix}${serial}`;
 }
 
 function normalizeClassName(value) {
@@ -73,6 +64,23 @@ function normalizeStudentYear(value) {
     .replace(/اعدادى/g, 'اعدادي');
 }
 
+function getEntryYearFromStudentYear(studentYear) {
+  const normalized = normalizeStudentYear(studentYear);
+  const entryYearByStudentYear = {
+    'اولى إبتدائي': 2025,
+    'تانية إبتدائي': 2024,
+    'ثالثة إبتدائي': 2023,
+    'رابعة إبتدائي': 2022,
+    'خمسة إبتدائي': 2021,
+    'سادسة إبتدائي': 2020,
+    'اولى اعدادي': 2019,
+    'تانية اعدادي': 2018,
+    'ثالثة اعدادي': 2017
+  };
+
+  return entryYearByStudentYear[normalized] || null;
+}
+
 function normalizeArabicEducationValue(value) {
   return normalizeStudentYear(value);
 }
@@ -88,5 +96,6 @@ module.exports = {
   requireFields,
   normalizeClassName,
   normalizeStudentYear,
+  getEntryYearFromStudentYear,
   normalizeArabicEducationValue
 };

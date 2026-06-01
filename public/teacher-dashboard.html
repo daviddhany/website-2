@@ -57,6 +57,7 @@
             <th>Name</th>
             <th>Birth Date</th>
             <th>Year</th>
+            <th>Entry Year</th>
             <th>Class</th>
           <th>National ID</th>
             <th>Parent</th>
@@ -107,13 +108,7 @@
         <input name="birthDate" id="editBirthDate" type="date" required>
       </label>
 
-      <label>
-        هل يمكنه السفر في حالة التأهل؟
-        <select name="canTravel" id="editCanTravel" required>
-          <option value="true">نعم</option>
-          <option value="false">لا</option>
-        </select>
-      </label>
+      
 
 
 
@@ -435,7 +430,6 @@ async function openEditStudent(id) {
   document.getElementById('editBirthDate').value = student.birthDate
     ? new Date(student.birthDate).toISOString().slice(0, 10)
     : '';
-  document.getElementById('editCanTravel').value = student.canTravel ? 'true' : 'false';
   await renderEditActivities(student);
 
   document.getElementById('editBox').scrollIntoView({ behavior: 'smooth' });
@@ -468,7 +462,7 @@ async function loadStudents() {
   const q = document.getElementById('search').value;
   const activityId = document.getElementById('studentActivityFilter') ? document.getElementById('studentActivityFilter').value : '';
   const rows = document.getElementById('rows');
-  rows.innerHTML = '<tr><td colspan="15" class="loading">Loading students...</td></tr>';
+  rows.innerHTML = '<tr><td colspan="16" class="loading">Loading students...</td></tr>';
 
   const params = new URLSearchParams();
   if (q) params.set('search', q);
@@ -479,12 +473,12 @@ async function loadStudents() {
     students = await api('/api/admin/students?' + params.toString());
     cachedStudents = students;
   } catch (err) {
-    rows.innerHTML = `<tr><td colspan="15" class="error">${escapeHtml(err.message)}</td></tr>`;
+    rows.innerHTML = `<tr><td colspan="16" class="error">${escapeHtml(err.message)}</td></tr>`;
     return;
   }
 
   if (!students.length) {
-    rows.innerHTML = '<tr><td colspan="15" class="muted">لا يوجد مخدومين مطابقين للبحث أو النشاط المختار.</td></tr>';
+    rows.innerHTML = '<tr><td colspan="16" class="muted">لا يوجد مخدومين مطابقين للبحث أو النشاط المختار.</td></tr>';
     return;
   }
 
@@ -494,6 +488,7 @@ async function loadStudents() {
       <td>${escapeHtml(s.fullName || '')}</td>
       <td>${s.birthDate ? new Date(s.birthDate).toLocaleDateString() : ''}</td>
       <td>${escapeHtml(s.studentYear || '')}</td>
+      <td>${escapeHtml(s.entryYear || '')}</td>
       <td>${escapeHtml(s.className || '')}</td>
       <td>${escapeHtml(s.nationalId || '')}</td>
       <td>${escapeHtml(s.parentPhone || '')}</td>
@@ -897,7 +892,6 @@ document.getElementById('editStudentForm').addEventListener('submit', async e =>
   const id = body.studentId;
   delete body.studentId;
 
-  body.canTravel = body.canTravel === 'true';
   body.activityIds = formData.getAll('activityIds');
 
   setLoading('editMsg', 'Saving student changes...');

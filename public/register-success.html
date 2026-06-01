@@ -221,6 +221,11 @@
         </tr>
 
         <tr>
+          <th>سنة دخول أولى ابتدائي</th>
+          <td>${safeText(student.entryYear)}</td>
+        </tr>
+
+        <tr>
           <th>تاريخ الميلاد</th>
           <td>${safeText(student.birthDate)}</td>
         </tr>
@@ -240,10 +245,7 @@
           <td>${safeText(student.address)}</td>
         </tr>
 
-        <tr>
-          <th>السفر في حالة التأهل</th>
-          <td>${student.canTravel ? 'نعم' : 'لا'}</td>
-        </tr>
+
       </table>
     `;
   }
