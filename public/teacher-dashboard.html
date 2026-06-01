@@ -128,24 +128,35 @@
       <p id="editMsg"></p>
     </form>
   </section>
-<!---
+
   <section class="card">
-    <h2>تغيير كلمة السر</h2>
+    <button type="button" class="collapsible-toggle" data-show="عرض تغيير كلمة السر" data-hide="إخفاء تغيير كلمة السر" onclick="toggleSection('passwordSection', this)">عرض تغيير كلمة السر</button>
+    <div id="passwordSection" class="collapsible-body">
+      <h2>تغيير كلمة السر</h2>
 
-    <form id="passwordForm">
-      <label>
-        كلمة السر القديمة
-        <input name="oldPassword" type="password" required>
-      </label>
-      <label>
-        كلمة السر الجديدة
-        <input name="newPassword" type="password" minlength="8" required>
-      </label>
+      <form id="passwordForm" class="grid">
+        <label>
+          كلمة السر القديمة
+          <input name="oldPassword" type="password" autocomplete="current-password" required>
+        </label>
 
-      <button>تغيير</button>
-      <p id="passMsg"></p>
-    </form>
-  </section>-->
+        <label>
+          كلمة السر الجديدة
+          <input name="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <label>
+          تأكيد كلمة السر الجديدة
+          <input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <div class="full-width">
+          <button type="submit">تغيير كلمة السر</button>
+          <p id="passMsg"></p>
+        </div>
+      </form>
+    </div>
+  </section>
 
 
 
@@ -902,6 +913,38 @@ document.getElementById('editStudentForm').addEventListener('submit', async e =>
     await loadTeams();
   } catch (err) {
     message('editMsg', err.message, false);
+  }
+});
+
+document.getElementById('passwordForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const form = e.target;
+  const body = Object.fromEntries(new FormData(form));
+
+  if (body.newPassword !== body.confirmPassword) {
+    message('passMsg', 'تأكيد كلمة السر غير مطابق', false);
+    return;
+  }
+
+  delete body.confirmPassword;
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  setLoading('passMsg', 'جاري تغيير كلمة السر...');
+
+  try {
+    await api('/api/auth/teacher/change-password', {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+
+    message('passMsg', 'تم تغيير كلمة السر بنجاح');
+    form.reset();
+  } catch (err) {
+    message('passMsg', err.message || 'فشل تغيير كلمة السر', false);
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 
