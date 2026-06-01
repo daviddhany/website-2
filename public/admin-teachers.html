@@ -26,7 +26,15 @@
   <section class="card">
     <h2>حالة التسجيل</h2>
     <p id="registrationStatusText" class="muted">جاري تحميل حالة التسجيل...</p>
-    <button type="button" id="toggleRegistrationBtn">جاري التحميل...</button>
+    <label>
+      وقت الإغلاق التلقائي اختياري
+      <input id="registrationClosesAt" type="datetime-local">
+    </label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button type="button" id="toggleRegistrationBtn">جاري التحميل...</button>
+      <button type="button" id="saveAutoCloseBtn">حفظ وقت الإغلاق التلقائي</button>
+    </div>
+    <p class="muted">عند الإغلاق: تسجيل المخدومين يقف، تكوين/تعديل الفرق يقف، والخادم يقدر يشاهد البيانات فقط.</p>
     <p id="registrationMsg"></p>
   </section>
 
@@ -118,9 +126,25 @@
 <script>
 
 
+function isoToLocalDatetimeValue(isoValue) {
+  if (!isoValue) return '';
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function localDatetimeValueToIso(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
 async function loadRegistrationStatus() {
   const btn = document.getElementById('toggleRegistrationBtn');
   const statusText = document.getElementById('registrationStatusText');
+  const closesAtInput = document.getElementById('registrationClosesAt');
 
   if (!btn || !statusText) return;
 
@@ -128,15 +152,36 @@ async function loadRegistrationStatus() {
     const settings = await api('/api/admin/registration-status');
 
     btn.dataset.registrationOpen = settings.registrationOpen ? 'true' : 'false';
-    btn.textContent = settings.registrationOpen ? 'إيقاف التسجيل' : 'فتح التسجيل';
+    btn.textContent = settings.registrationOpen ? 'إيقاف التسجيل الآن' : 'فتح التسجيل';
     btn.style.background = settings.registrationOpen ? '#e53935' : '#4CAF50';
+
+    if (closesAtInput) {
+      closesAtInput.value = isoToLocalDatetimeValue(settings.registrationClosesAt);
+    }
+
+    const closeText = settings.registrationClosesAt
+      ? ` وسيتم إغلاقه تلقائياً في ${new Date(settings.registrationClosesAt).toLocaleString('ar-EG')}.`
+      : '';
+
     statusText.textContent = settings.registrationOpen
-      ? 'التسجيل مفتوح حالياً والمخدومين يقدروا يعملوا حسابات جديدة.'
-      : 'التسجيل مغلق حالياً ولا يمكن إنشاء حسابات جديدة.';
+      ? `التسجيل مفتوح حالياً.${closeText}`
+      : 'التسجيل مغلق حالياً: تسجيل المخدومين والفرق وتعديل الخدام متوقف، والخدام Viewer فقط.';
   } catch (err) {
     statusText.textContent = 'فشل تحميل حالة التسجيل.';
     message('registrationMsg', err.message, false);
   }
+}
+
+async function saveRegistrationSettings(registrationOpen, keepAutoClose = true) {
+  const closesAtInput = document.getElementById('registrationClosesAt');
+  const registrationClosesAt = keepAutoClose && closesAtInput
+    ? localDatetimeValueToIso(closesAtInput.value)
+    : null;
+
+  return api('/api/admin/registration-status', {
+    method: 'POST',
+    body: JSON.stringify({ registrationOpen, registrationClosesAt })
+  });
 }
 
 const toggleRegistrationBtn = document.getElementById('toggleRegistrationBtn');
@@ -144,7 +189,7 @@ if (toggleRegistrationBtn) {
   toggleRegistrationBtn.addEventListener('click', async () => {
     const isOpenNow = toggleRegistrationBtn.dataset.registrationOpen === 'true';
     const confirmMessage = isOpenNow
-      ? 'هل تريد إيقاف التسجيل؟'
+      ? 'هل تريد إيقاف التسجيل الآن؟ كل التسجيلات والفرق وتعديل الخدام سيقف.'
       : 'هل تريد فتح التسجيل؟';
 
     if (!confirm(confirmMessage)) return;
@@ -153,10 +198,7 @@ if (toggleRegistrationBtn) {
     toggleRegistrationBtn.textContent = 'جاري الحفظ...';
 
     try {
-      const settings = await api('/api/admin/registration-status', {
-        method: 'POST',
-        body: JSON.stringify({ registrationOpen: !isOpenNow })
-      });
+      const settings = await saveRegistrationSettings(!isOpenNow, !isOpenNow);
 
       message(
         'registrationMsg',
@@ -168,6 +210,25 @@ if (toggleRegistrationBtn) {
       message('registrationMsg', err.message, false);
     } finally {
       toggleRegistrationBtn.disabled = false;
+    }
+  });
+}
+
+const saveAutoCloseBtn = document.getElementById('saveAutoCloseBtn');
+if (saveAutoCloseBtn) {
+  saveAutoCloseBtn.addEventListener('click', async () => {
+    saveAutoCloseBtn.disabled = true;
+    saveAutoCloseBtn.textContent = 'جاري الحفظ...';
+
+    try {
+      const settings = await saveRegistrationSettings(true, true);
+      message('registrationMsg', settings.registrationClosesAt ? 'تم حفظ وقت الإغلاق التلقائي' : 'تم فتح التسجيل بدون وقت إغلاق تلقائي');
+      await loadRegistrationStatus();
+    } catch (err) {
+      message('registrationMsg', err.message, false);
+    } finally {
+      saveAutoCloseBtn.disabled = false;
+      saveAutoCloseBtn.textContent = 'حفظ وقت الإغلاق التلقائي';
     }
   });
 }

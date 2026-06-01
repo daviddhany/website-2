@@ -5,6 +5,10 @@ const systemSettingsSchema = new mongoose.Schema(
     registrationOpen: {
       type: Boolean,
       default: true
+    },
+    registrationClosesAt: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }

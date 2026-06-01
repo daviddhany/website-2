@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
 const Activity = require('../models/Activity');
-const SystemSettings = require('../models/SystemSettings');
+const { getEffectiveRegistrationSettings, requireRegistrationOpen } = require('../helpers/registrationControl');
 const { requireStudent } = require('../middleware/auth');
 const { makeUpload } = require('../middleware/upload');
 const {
@@ -51,16 +51,22 @@ const paymentUpload = makeUpload('uploads/payment-proofs');
 
 
 router.get('/registration-status', async (req, res) => {
-  const settings = await SystemSettings.findOne();
-  res.json({ registrationOpen: settings ? settings.registrationOpen : true });
+  const { settings, effectiveRegistrationOpen } = await getEffectiveRegistrationSettings();
+
+  res.json({
+    registrationOpen: effectiveRegistrationOpen,
+    registrationClosesAt: settings.registrationClosesAt
+      ? settings.registrationClosesAt.toISOString()
+      : null
+  });
 });
 
 router.post('/register', async (req, res) => {
   try {
 
-    const settings = await SystemSettings.findOne();
+    const { effectiveRegistrationOpen } = await getEffectiveRegistrationSettings();
 
-    if (settings && !settings.registrationOpen) {
+    if (!effectiveRegistrationOpen) {
       return res.status(403).json({
         error: 'تم إغلاق التسجيل حالياً بواسطة الإدارة'
       });
@@ -236,7 +242,7 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
-router.put('/me', requireStudent, async (req, res) => {
+router.put('/me', requireStudent, requireRegistrationOpen, async (req, res) => {
   try {
 
     const allowed = [
@@ -305,6 +311,7 @@ router.put('/me', requireStudent, async (req, res) => {
 router.post(
   '/me/upload/student-photo',
   requireStudent,
+  requireRegistrationOpen,
   photoUpload.single('file'),
 
   async (req, res) => {
@@ -341,6 +348,7 @@ router.post(
 router.post(
   '/me/upload/birth-certificate',
   requireStudent,
+  requireRegistrationOpen,
   birthUpload.single('file'),
 
   async (req, res) => {
@@ -378,6 +386,7 @@ birthCertificatePath: req.file.path.endsWith('.pdf')
 router.post(
   '/me/upload/payment-proof',
   requireStudent,
+  requireRegistrationOpen,
   paymentUpload.single('file'),
 
   async (req, res) => {
@@ -435,7 +444,7 @@ router.get('/me/activities', requireStudent, async (req, res) => {
   }
 });
 
-router.put('/me/activities', requireStudent, async (req, res) => {
+router.put('/me/activities', requireStudent, requireRegistrationOpen, async (req, res) => {
   try {
 
     const student = await Student.findById(

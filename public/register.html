@@ -66,7 +66,10 @@ async function checkRegistrationStatus() {
       const form = document.getElementById('form');
       const button = document.getElementById('submitBtn');
 
-      if (box) box.style.display = 'block';
+      if (box) {
+        box.style.display = 'block';
+        box.textContent = 'تم إغلاق التسجيل حالياً بواسطة الإدارة.';
+      }
       if (button) {
         button.disabled = true;
         button.textContent = 'التسجيل مغلق حالياً';
@@ -76,6 +79,13 @@ async function checkRegistrationStatus() {
         form.querySelectorAll('input, select, textarea').forEach(input => {
           input.disabled = true;
         });
+      }
+    } else if (settings.registrationClosesAt) {
+      const box = document.getElementById('registrationClosedBox');
+      if (box) {
+        box.style.display = 'block';
+        box.className = 'success';
+        box.textContent = `التسجيل مفتوح وسيتم إغلاقه تلقائياً في ${new Date(settings.registrationClosesAt).toLocaleString('ar-EG')}.`;
       }
     }
   } catch (err) {

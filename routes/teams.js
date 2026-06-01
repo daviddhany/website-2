@@ -4,6 +4,7 @@ const Activity = require('../models/Activity');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const { requireTeacher } = require('../middleware/auth');
+const { requireRegistrationOpen } = require('../helpers/registrationControl');
 
 const router = express.Router();
 
@@ -351,7 +352,7 @@ async function generateTeamName(activityId, activityName, teacher) {
   return teamName;
 }
 
-router.post('/', requireTeacher, async (req, res) => {
+router.post('/', requireTeacher, requireRegistrationOpen, async (req, res) => {
   try {
     const teacher = await getTeacher(req);
     const { activityId, studentIds = [] } = req.body;
@@ -393,7 +394,7 @@ router.post('/', requireTeacher, async (req, res) => {
   }
 });
 
-router.put('/:id/students', requireTeacher, async (req, res) => {
+router.put('/:id/students', requireTeacher, requireRegistrationOpen, async (req, res) => {
   try {
     const teacher = await getTeacher(req);
     const { studentIds } = req.body;
@@ -428,7 +429,7 @@ router.put('/:id/students', requireTeacher, async (req, res) => {
   }
 });
 
-router.put('/:id/lock', requireTeacher, async (req, res) => {
+router.put('/:id/lock', requireTeacher, requireRegistrationOpen, async (req, res) => {
   const teacher = await getTeacher(req);
   const team = await Team.findById(req.params.id);
 
@@ -447,7 +448,7 @@ router.put('/:id/lock', requireTeacher, async (req, res) => {
   res.json({ message: 'تم قفل الفريق' });
 });
 
-router.put('/:id/unlock', requireTeacher, async (req, res) => {
+router.put('/:id/unlock', requireTeacher, requireRegistrationOpen, async (req, res) => {
   const teacher = await getTeacher(req);
   const team = await Team.findById(req.params.id);
 
@@ -466,7 +467,7 @@ router.put('/:id/unlock', requireTeacher, async (req, res) => {
   res.json({ message: 'تم فتح الفريق' });
 });
 
-router.delete('/:id', requireTeacher, async (req, res) => {
+router.delete('/:id', requireTeacher, requireRegistrationOpen, async (req, res) => {
   const teacher = await getTeacher(req);
   const team = await Team.findById(req.params.id);
 
