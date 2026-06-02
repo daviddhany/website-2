@@ -5,6 +5,7 @@ const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const { requireTeacher } = require('../middleware/auth');
 const { requireRegistrationOpen } = require('../helpers/registrationControl');
+const { normalizeClassName, normalizeStudentYear, getClassNameVariants, getStudentYearVariants } = require('../utils');
 
 const router = express.Router();
 
@@ -15,6 +16,21 @@ async function getTeacher(req) {
 const LOWER_SERVICE_CLASSES = ['يوحنا', 'ابوسيفين', 'العذراء'];
 const PREP_CLASSES = ['إعدادي', 'اعدادي'];
 
+const toMongoIn = (values) => {
+  const uniqueValues = [...new Set((values || []).filter(Boolean))];
+  return uniqueValues.length === 1 ? uniqueValues[0] : { $in: uniqueValues };
+};
+
+function valuesMatch(value, expected) {
+  if (!expected) return true;
+
+  if (expected.$in) {
+    return expected.$in.includes(value) || expected.$in.map(normalizeStudentYear).includes(normalizeStudentYear(value)) || expected.$in.map(normalizeClassName).includes(normalizeClassName(value));
+  }
+
+  return value === expected || normalizeStudentYear(value) === normalizeStudentYear(expected) || normalizeClassName(value) === normalizeClassName(expected);
+}
+
 const PRIMARY_YEAR_GROUPS = [
   ['اولى إبتدائي', 'تانية إبتدائي'],
   ['ثالثة إبتدائي', 'رابعة إبتدائي'],
@@ -24,10 +40,14 @@ const PRIMARY_YEAR_GROUPS = [
 function yearGroupForTeams(year) {
   if (!year) return null;
 
-  const normalizedYear = String(year).trim();
-  const group = PRIMARY_YEAR_GROUPS.find((years) => years.includes(normalizedYear));
+  const normalizedYear = normalizeStudentYear(year);
+  const group = PRIMARY_YEAR_GROUPS.find((years) => years.map(normalizeStudentYear).includes(normalizedYear));
 
-  return group || [normalizedYear];
+  if (group) {
+    return group.flatMap(getStudentYearVariants);
+  }
+
+  return getStudentYearVariants(normalizedYear);
 }
 
 function sameTeamScopeFilterForTeacher(teacher) {
@@ -42,10 +62,10 @@ function sameTeamScopeFilterForTeacher(teacher) {
   }
 
   if (teacher.role === 'serviceLeader') {
-    if (PREP_CLASSES.includes(teacher.assignedClass)) {
-      filter.className = { $in: PREP_CLASSES };
+    if (PREP_CLASSES.map(normalizeClassName).includes(normalizeClassName(teacher.assignedClass))) {
+      filter.className = { $in: PREP_CLASSES.flatMap(getClassNameVariants) };
     } else {
-      filter.className = teacher.assignedClass;
+      filter.className = toMongoIn(getClassNameVariants(teacher.assignedClass));
     }
     return filter;
   }
@@ -53,24 +73,22 @@ function sameTeamScopeFilterForTeacher(teacher) {
   if (teacher.role === 'teacher') {
     if (teacher.assignedYear) {
       const yearGroup = yearGroupForTeams(teacher.assignedYear);
-      filter.studentYear = yearGroup && yearGroup.length > 1
-        ? { $in: yearGroup }
-        : teacher.assignedYear;
+      filter.studentYear = toMongoIn(yearGroup);
     }
 
     // خادم ابتدائي يشوف مجموعة السنين المناسبة: أولى+تانية، تالتة+رابعة، خامسة+سادسة.
-    if (LOWER_SERVICE_CLASSES.includes(teacher.assignedClass)) {
-      filter.className = { $in: LOWER_SERVICE_CLASSES };
+    if (LOWER_SERVICE_CLASSES.map(normalizeClassName).includes(normalizeClassName(teacher.assignedClass))) {
+      filter.className = { $in: LOWER_SERVICE_CLASSES.flatMap(getClassNameVariants) };
       return filter;
     }
 
     // خادم إعدادي يشوف نفس سنة إعدادي ونفس النوع في كل إعدادي، مع دعم الإملاءين.
-    if (PREP_CLASSES.includes(teacher.assignedClass)) {
-      filter.className = { $in: PREP_CLASSES };
+    if (PREP_CLASSES.map(normalizeClassName).includes(normalizeClassName(teacher.assignedClass))) {
+      filter.className = { $in: PREP_CLASSES.flatMap(getClassNameVariants) };
       return filter;
     }
 
-    filter.className = teacher.assignedClass;
+    filter.className = toMongoIn(getClassNameVariants(teacher.assignedClass));
   }
 
   return filter;
@@ -108,22 +126,12 @@ async function canAccessStudent(teacher, studentId, activityId) {
     return false;
   }
 
-  if (scopeFilter.studentYear) {
-    if (scopeFilter.studentYear.$in) {
-      if (!scopeFilter.studentYear.$in.includes(student.studentYear)) {
-        return false;
-      }
-    } else if (student.studentYear !== scopeFilter.studentYear) {
-      return false;
-    }
+  if (scopeFilter.studentYear && !valuesMatch(student.studentYear, scopeFilter.studentYear)) {
+    return false;
   }
 
   if (scopeFilter.className) {
-    if (scopeFilter.className.$in) {
-      return scopeFilter.className.$in.includes(student.className);
-    }
-
-    return student.className === scopeFilter.className;
+    return valuesMatch(student.className, scopeFilter.className);
   }
 
   return true;

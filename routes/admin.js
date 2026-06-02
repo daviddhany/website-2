@@ -6,8 +6,40 @@ const Teacher = require('../models/Teacher');
 const Team = require('../models/Team');
 const { requireTeacher, requireAdmin } = require('../middleware/auth');
 const { getSystemSettings, getEffectiveRegistrationSettings, requireRegistrationOpenForNonAdmin } = require('../helpers/registrationControl');
+const { normalizeClassName, normalizeStudentYear, getClassNameVariants, getStudentYearVariants } = require('../utils');
 
 const router = express.Router();
+
+const toMongoIn = (values) => {
+  const uniqueValues = [...new Set((values || []).filter(Boolean))];
+  return uniqueValues.length === 1 ? uniqueValues[0] : { $in: uniqueValues };
+};
+
+function setTeacherScopeOnFilter(filter, currentTeacher, includeYear = true) {
+  if (!filter || !currentTeacher) return filter;
+
+  if (currentTeacher.assignedClass) {
+    filter.className = toMongoIn(getClassNameVariants(currentTeacher.assignedClass));
+  }
+
+  if (includeYear && currentTeacher.assignedYear) {
+    filter.studentYear = toMongoIn(getStudentYearVariants(currentTeacher.assignedYear));
+  }
+
+  if (currentTeacher.assignedGender && currentTeacher.assignedGender !== 'all') {
+    filter.gender = currentTeacher.assignedGender;
+  }
+
+  return filter;
+}
+
+function sameClass(a, b) {
+  return normalizeClassName(a) === normalizeClassName(b);
+}
+
+function sameYear(a, b) {
+  return normalizeStudentYear(a) === normalizeStudentYear(b);
+}
 
 
 router.get('/registration-status', requireAdmin, async (req, res) => {
@@ -115,14 +147,11 @@ async function getStudentFilterForTeacher(req) {
   const filter = {};
 
   if (currentTeacher.role === 'teacher') {
-    if (currentTeacher.assignedClass) filter.className = currentTeacher.assignedClass;
-    if (currentTeacher.assignedYear) filter.studentYear = currentTeacher.assignedYear;
-    if (currentTeacher.assignedGender) filter.gender = currentTeacher.assignedGender;
+    setTeacherScopeOnFilter(filter, currentTeacher, true);
   }
 
   if (currentTeacher.role === 'serviceLeader') {
-    if (currentTeacher.assignedClass) filter.className = currentTeacher.assignedClass;
-    if (currentTeacher.assignedGender) filter.gender = currentTeacher.assignedGender;
+    setTeacherScopeOnFilter(filter, currentTeacher, false);
   }
 
   return { currentTeacher, filter };
@@ -197,14 +226,14 @@ async function canTeacherAccessStudent(currentTeacher, student) {
   if (currentTeacher.role === 'admin') return true;
 
   if (currentTeacher.role === 'teacher') {
-    return student.className === currentTeacher.assignedClass &&
-      student.studentYear === currentTeacher.assignedYear &&
-      student.gender === currentTeacher.assignedGender;
+    return sameClass(student.className, currentTeacher.assignedClass) &&
+      sameYear(student.studentYear, currentTeacher.assignedYear) &&
+      (currentTeacher.assignedGender === 'all' || student.gender === currentTeacher.assignedGender);
   }
 
   if (currentTeacher.role === 'serviceLeader') {
-    return student.className === currentTeacher.assignedClass &&
-      student.gender === currentTeacher.assignedGender;
+    return sameClass(student.className, currentTeacher.assignedClass) &&
+      (currentTeacher.assignedGender === 'all' || student.gender === currentTeacher.assignedGender);
   }
 
   return false;
@@ -252,16 +281,10 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
     const currentTeacher = await Teacher.findById(req.session.userId);
 
     // 🔒 Restrict teacher access
-    if (currentTeacher.role === 'teacher') {
-      if (student.className !== currentTeacher.assignedClass || student.studentYear !== currentTeacher.assignedYear || student.gender !== currentTeacher.assignedGender) {
-        return res.status(403).json({ error: 'غير مسموح' });
-      }
-    }
+    const allowed = await canTeacherAccessStudent(currentTeacher, student);
 
-    if (currentTeacher.role === 'serviceLeader') {
-      if (student.className !== currentTeacher.assignedClass || student.gender !== currentTeacher.assignedGender) {
-        return res.status(403).json({ error: 'غير مسموح' });
-      }
+    if (!allowed) {
+      return res.status(403).json({ error: 'غير مسموح' });
     }
 
     // ✅ Allowed fields only
@@ -427,9 +450,9 @@ router.put('/students/:id/password', requireTeacher, requireRegistrationOpenForN
 
     if (currentTeacher.role !== 'admin') {
       const allowed =
-        student.className === currentTeacher.assignedClass &&
-        student.studentYear === currentTeacher.assignedYear &&
-        student.gender === currentTeacher.assignedGender;
+        sameClass(student.className, currentTeacher.assignedClass) &&
+        sameYear(student.studentYear, currentTeacher.assignedYear) &&
+        (currentTeacher.assignedGender === 'all' || student.gender === currentTeacher.assignedGender);
 
       if (!allowed) {
         return res.status(403).json({ error: 'غير مسموح' });

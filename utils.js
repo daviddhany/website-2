@@ -50,18 +50,58 @@ async function generateStudentCode(gender, className, entryYear) {
 
 function normalizeClassName(value) {
   if (value === undefined || value === null) return value;
+
   const text = String(value).trim();
+
   if (['اعدادي', 'إعدادي', 'اعدادى', 'إعدادى'].includes(text)) return 'إعدادي';
+  if (['ابو سيفين', 'أبو سيفين', 'ابوسيفين'].includes(text)) return 'ابوسيفين';
+  if (['يوحنا الحبيب', 'يوحنا'].includes(text)) return 'يوحنا';
+
   return text;
+}
+
+function getClassNameVariants(value) {
+  const normalized = normalizeClassName(value);
+
+  const variantsByClass = {
+    'يوحنا': ['يوحنا', 'يوحنا الحبيب'],
+    'ابوسيفين': ['ابوسيفين', 'ابو سيفين', 'أبو سيفين'],
+    'العذراء': ['العذراء'],
+    'خمسة و ستة': ['خمسة و ستة'],
+    'إعدادي': ['إعدادي', 'اعدادي', 'اعدادى', 'إعدادى']
+  };
+
+  return variantsByClass[normalized] || [normalized].filter(Boolean);
 }
 
 function normalizeStudentYear(value) {
   if (value === undefined || value === null) return value;
+
   return String(value)
     .trim()
+    .replace(/^أولى/, 'اولى')
+    .replace(/^الأولى/, 'اولى')
     .replace(/إعدادي/g, 'اعدادي')
     .replace(/إعدادى/g, 'اعدادي')
     .replace(/اعدادى/g, 'اعدادي');
+}
+
+function getStudentYearVariants(value) {
+  const normalized = normalizeStudentYear(value);
+
+  const variantsByYear = {
+    'اولى إبتدائي': ['اولى إبتدائي', 'أولى إبتدائي', 'اولى ابتدائي', 'أولى ابتدائي'],
+    'تانية إبتدائي': ['تانية إبتدائي', 'تانية ابتدائي'],
+    'ثالثة إبتدائي': ['ثالثة إبتدائي', 'ثالثة ابتدائي'],
+    'رابعة إبتدائي': ['رابعة إبتدائي', 'رابعة ابتدائي'],
+    'خمسة إبتدائي': ['خمسة إبتدائي', 'خامسة إبتدائي', 'خمسة ابتدائي', 'خامسة ابتدائي'],
+    'سادسة إبتدائي': ['سادسة إبتدائي', 'سادسة ابتدائي'],
+    'اولى اعدادي': ['اولى اعدادي', 'اولى إعدادي', 'أولى اعدادي', 'أولى إعدادي'],
+    'تانية اعدادي': ['تانية اعدادي', 'تانية إعدادي'],
+    'ثالثة اعدادي': ['ثالثة اعدادي', 'ثالثة إعدادي']
+  };
+
+  return variantsByYear[normalized] || [normalized].filter(Boolean);
 }
 
 function getEntryYearFromStudentYear(studentYear) {
@@ -96,6 +136,8 @@ module.exports = {
   requireFields,
   normalizeClassName,
   normalizeStudentYear,
+  getClassNameVariants,
+  getStudentYearVariants,
   getEntryYearFromStudentYear,
   normalizeArabicEducationValue
 };
