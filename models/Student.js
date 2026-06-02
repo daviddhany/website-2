@@ -1,8 +1,49 @@
 const mongoose = require('mongoose');
 
+function normalizeFingerprintText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/ؤ/g, 'و')
+    .replace(/ئ/g, 'ي')
+    .replace(/ـ/g, '')
+    .replace(/[ًٌٍَُِّْ]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeFingerprintDate(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function buildStudentFingerprint({ fullName, birthDate, className, studentYear }) {
+  return [
+    normalizeFingerprintText(fullName),
+    normalizeFingerprintDate(birthDate),
+    normalizeFingerprintText(className),
+    normalizeFingerprintText(studentYear)
+  ].join('|');
+}
+
 const studentSchema = new mongoose.Schema(
   {
     studentCode: { type: String, required: true, unique: true, trim: true },
+
+    // Prevent registering the same student twice even if parent phone changes.
+    studentFingerprint: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true
+    },
 
     // ✅ Full name (at least 3 names)
     fullName: {
@@ -117,5 +158,20 @@ const studentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+studentSchema.statics.buildFingerprint = buildStudentFingerprint;
+
+studentSchema.pre('validate', function (next) {
+  if (this.fullName && this.birthDate && this.className && this.studentYear) {
+    this.studentFingerprint = buildStudentFingerprint({
+      fullName: this.fullName,
+      birthDate: this.birthDate,
+      className: this.className,
+      studentYear: this.studentYear
+    });
+  }
+
+  next();
+});
 
 module.exports = mongoose.model('Student', studentSchema);

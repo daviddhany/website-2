@@ -146,20 +146,29 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    const studentFingerprint = Student.buildFingerprint({
+      fullName: req.body.fullName,
+      birthDate: req.body.birthDate,
+      className,
+      studentYear
+    });
+
     const possibleDuplicateStudents = await Student.find({
-      parentPhone: String(req.body.parentPhone || '').trim(),
       className,
       studentYear,
       birthDate: {
         $gte: birthDateRange.start,
         $lt: birthDateRange.end
       }
-    }).select('fullName studentCode');
+    }).select('fullName studentCode studentFingerprint');
 
     const normalizedNewName = normalizeDuplicateText(req.body.fullName);
 
     const duplicateStudent = possibleDuplicateStudents.find((student) => {
-      return normalizeDuplicateText(student.fullName) === normalizedNewName;
+      return (
+        student.studentFingerprint === studentFingerprint ||
+        normalizeDuplicateText(student.fullName) === normalizedNewName
+      );
     });
 
     if (duplicateStudent) {
@@ -191,7 +200,8 @@ router.post('/register', async (req, res) => {
       studentPhone: req.body.studentPhone || '',
       passwordHash,
       parentPhone: req.body.parentPhone,
-      address: req.body.address
+      address: req.body.address,
+      studentFingerprint
     });
 
     res.status(201).json({
@@ -218,7 +228,9 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({
         error: duplicatedField === 'studentCode'
           ? 'كود المخدوم موجود بالفعل'
-          : `بيانات متكررة في قاعدة البيانات: ${duplicatedField}`
+          : duplicatedField === 'studentFingerprint'
+            ? 'هذا المخدوم مسجل بالفعل'
+            : `بيانات متكررة في قاعدة البيانات: ${duplicatedField}`
       });
     }
 
@@ -295,6 +307,60 @@ router.put('/me', requireStudent, requireRegistrationOpen, async (req, res) => {
       });
     }
 
+    const currentStudent = await Student.findById(req.session.userId);
+
+    if (!currentStudent) {
+      return res.status(404).json({
+        error: 'المخدوم غير موجود'
+      });
+    }
+
+    if (updates.fullName || updates.birthDate) {
+      const nextFullName = updates.fullName || currentStudent.fullName;
+      const nextBirthDate = updates.birthDate || currentStudent.birthDate;
+      const nextFingerprint = Student.buildFingerprint({
+        fullName: nextFullName,
+        birthDate: nextBirthDate,
+        className: currentStudent.className,
+        studentYear: currentStudent.studentYear
+      });
+
+      const birthDateRange = getBirthDateRange(nextBirthDate);
+
+      if (!birthDateRange) {
+        return res.status(400).json({
+          error: 'تاريخ الميلاد غير صحيح'
+        });
+      }
+
+      const possibleDuplicateStudents = await Student.find({
+        _id: { $ne: currentStudent._id },
+        className: currentStudent.className,
+        studentYear: currentStudent.studentYear,
+        birthDate: {
+          $gte: birthDateRange.start,
+          $lt: birthDateRange.end
+        }
+      }).select('fullName studentCode studentFingerprint');
+
+      const normalizedNextName = normalizeDuplicateText(nextFullName);
+
+      const duplicateStudent = possibleDuplicateStudents.find((student) => {
+        return (
+          student.studentFingerprint === nextFingerprint ||
+          normalizeDuplicateText(student.fullName) === normalizedNextName
+        );
+      });
+
+      if (duplicateStudent) {
+        return res.status(409).json({
+          error: `هذا المخدوم مسجل بالفعل بكود ${duplicateStudent.studentCode}`
+        });
+      }
+
+      updates.studentFingerprint = nextFingerprint;
+    }
+
     const student = await Student.findByIdAndUpdate(
       req.session.userId,
       updates,
@@ -302,11 +368,17 @@ router.put('/me', requireStudent, requireRegistrationOpen, async (req, res) => {
         new: true,
         runValidators: true
       }
-    ).select('-passwordHash');
+    ).select('-passwordHash -studentFingerprint');
 
     res.json(student);
 
   } catch (err) {
+
+    if (err.code === 11000) {
+      return res.status(409).json({
+        error: 'هذا المخدوم مسجل بالفعل'
+      });
+    }
 
     res.status(500).json({
       error: 'فشل تعديل بيانات المخدوم'
