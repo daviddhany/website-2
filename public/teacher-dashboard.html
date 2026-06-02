@@ -18,8 +18,8 @@
   <div class="header-right">
     <nav class="header-actions">
       <a href="/api/admin/export/students.csv" class="btn-export">Export excel</a>
-      <a href="/public/reports.html" class="btn-export">Reports</a>
-      <a href="/public/admin-teachers.html" class="btn-export" id="manageTeachersBtn">Manage Teachers</a>
+      <a href="/c/4b8ecaf0-1002-83ea-b660-8f9e88d19bd9" class="btn-export">Reports</a>
+      <a href="/c/5c9fcaf0-2103-83ea-b660-9a9e88d19bd0" class="btn-export" id="manageTeachersBtn">Manage Teachers</a>
       <button type="button" onclick="logout()" class="btn-logout">Logout</button>
     </nav>
     <img src="/public/logo-right.png" class="header-logo" alt="Logo">
@@ -1014,7 +1014,7 @@ async function start() {
     await loadActivities();
     await loadTeams();
   } catch (err) {
-    location.href = '/public/teacher-login.html';
+    location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
   }
 }
 

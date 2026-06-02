@@ -93,15 +93,84 @@ app.use(
   })
 );
 app.use('/api/teachers', teacherRoutes);
+
+// ChatGPT-style clean page URLs.
+// Example: /c/6a1dcaf0-3304-83ea-b660-1e9e88d19bd2
+const pageRoutes = {
+  home: {
+    id: '6a1dcaf0-3304-83ea-b660-1e9e88d19bd2',
+    file: 'index.html'
+  },
+  register: {
+    id: '7b2ecaf0-4405-83ea-b660-2f9e88d19bd3',
+    file: 'register.html'
+  },
+  registerSuccess: {
+    id: '8c3fcaf0-5506-83ea-b660-3a9e88d19bd4',
+    file: 'register-success.html'
+  },
+  studentLogin: {
+    id: '9d4acaf0-6607-83ea-b660-4b9e88d19bd5',
+    file: 'student-login.html'
+  },
+  studentDashboard: {
+    id: '1e5bcaf0-7708-83ea-b660-5c9e88d19bd6',
+    file: 'student-dashboard.html'
+  },
+  teacherLogin: {
+    id: '2f6ccaf0-8809-83ea-b660-6d9e88d19bd7',
+    file: 'teacher-login.html'
+  },
+  teacherDashboard: {
+    id: '3a7dcaf0-9901-83ea-b660-7e9e88d19bd8',
+    file: 'teacher-dashboard.html'
+  },
+  reports: {
+    id: '4b8ecaf0-1002-83ea-b660-8f9e88d19bd9',
+    file: 'reports.html'
+  },
+  adminTeachers: {
+    id: '5c9fcaf0-2103-83ea-b660-9a9e88d19bd0',
+    file: 'admin-teachers.html'
+  },
+  apiDocs: {
+    id: '6d0acaf0-3204-83ea-b660-0b9e88d19bd1',
+    file: 'api-docs.html'
+  }
+};
+
+const idToPage = Object.values(pageRoutes).reduce((acc, page) => {
+  acc[page.id] = page.file;
+  return acc;
+}, {});
+
+const fileToRoute = Object.values(pageRoutes).reduce((acc, page) => {
+  acc[page.file] = `/c/${page.id}`;
+  return acc;
+}, {});
+
+app.get('/', (req, res) => {
+  res.redirect(fileToRoute['index.html']);
+});
+
+app.get('/c/:pageId', (req, res, next) => {
+  const fileName = idToPage[req.params.pageId];
+  if (!fileName) return next();
+  return res.sendFile(path.join(__dirname, 'public', fileName));
+});
+
+// Redirect old visible HTML URLs to hidden ID URLs.
+app.get('/public/:fileName', (req, res, next) => {
+  const cleanRoute = fileToRoute[req.params.fileName];
+  if (cleanRoute) return res.redirect(301, cleanRoute);
+  return next();
+});
+
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // IMPORTANT:
 // Do NOT expose uploads publicly.
 // This line was removed:
-
-app.get('/', (req, res) => {
-  res.redirect('/public/index.html');
-});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);

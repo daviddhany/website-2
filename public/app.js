@@ -30,7 +30,7 @@ function message(id, text, ok = true) {
 
 async function logout() {
   await api('/api/auth/logout', { method: 'POST' });
-  location.href = '/public/index.html';
+  location.href = '/c/6a1dcaf0-3304-83ea-b660-1e9e88d19bd2';
 }
 
 

@@ -160,7 +160,7 @@
       button.textContent = 'Logging in...';
       try {
         const data = await api('/api/auth/student/login', { method:'POST', body: JSON.stringify(body) });
-        location.href = '/public/student-dashboard.html';
+        location.href = '/c/1e5bcaf0-7708-83ea-b660-5c9e88d19bd6';
       } catch(err) {
         message('msg', err.message, false);
         button.disabled = false;
