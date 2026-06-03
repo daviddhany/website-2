@@ -1009,12 +1009,33 @@ if (studentActivityFilter) {
 async function start() {
   try {
     await loadMe();
-    await loadStudents();
-    await loadCategories();
-    await loadActivities();
-    await loadTeams();
   } catch (err) {
     location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
+    return;
+  }
+
+  try {
+    await loadStudents();
+  } catch (err) {
+    console.error('Students:', err);
+  }
+
+  try {
+    await loadCategories();
+  } catch (err) {
+    console.error('Categories:', err);
+  }
+
+  try {
+    await loadActivities();
+  } catch (err) {
+    console.error('Activities:', err);
+  }
+
+  try {
+    await loadTeams();
+  } catch (err) {
+    console.error('Teams:', err);
   }
 }
 
