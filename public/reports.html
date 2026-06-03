@@ -140,8 +140,22 @@ Vue.createApp({
       }
     }
   },
-  mounted() { this.loadData(); }
-}).mount('#reportsApp');
+async mounted() {
+  try {
+    const user = await api('/api/auth/me');
+
+    if (!user || user.userType !== 'teacher') {
+      location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
+      return;
+    }
+
+    await this.loadData();
+  } catch (err) {
+    console.error(err);
+    this.error = err.message || 'فشل التحقق من تسجيل الدخول';
+    this.loading = false;
+  }
+}}).mount('#reportsApp');
 </script>
 <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
 </body>
