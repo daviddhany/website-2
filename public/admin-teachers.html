@@ -332,8 +332,24 @@ if (teacherSearchInput) {
   });
 }
 
-loadRegistrationStatus();
-loadTeachers().catch(() => location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7');
+async function initAdminTeachersPage() {
+  try {
+    const user = await api('/api/auth/me');
+
+    if (!user || user.userType !== 'teacher' || user.role !== 'admin') {
+      location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
+      return;
+    }
+
+    await loadRegistrationStatus();
+    await loadTeachers();
+  } catch (err) {
+    console.error(err);
+    message('msg', err.message || 'فشل تحميل الصفحة', false);
+  }
+}
+
+initAdminTeachersPage();
 </script>
 <footer class="app-footer" dir="ltr">
   © 2026 David Hany. All rights reserved.
