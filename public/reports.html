@@ -71,6 +71,8 @@
       <div class="report-summary">
         <span>👦 إجمالي الأولاد: <b>{{ yearClassTotals.male }}</b></span>
         <span>👧 إجمالي البنات: <b>{{ yearClassTotals.female }}</b></span>
+        <span>✅ Submitted أولاد: <b>{{ yearClassTotals.submittedMale }}</b></span>
+        <span>✅ Submitted بنات: <b>{{ yearClassTotals.submittedFemale }}</b></span>
         <span>📊 الإجمالي: <b>{{ yearClassTotals.count }}</b></span>
       </div>
       <div class="table-wrap">
@@ -81,6 +83,9 @@
               <th>الخدمة</th>
               <th>أولاد</th>
               <th>بنات</th>
+              <th>Submitted أولاد</th>
+              <th>Submitted بنات</th>
+              <th>Submitted إجمالي</th>
               <th>الإجمالي</th>
             </tr>
           </thead>
@@ -90,6 +95,9 @@
               <td>{{ item.className }}</td>
               <td>{{ item.male }}</td>
               <td>{{ item.female }}</td>
+              <td>{{ item.submittedMale }}</td>
+              <td>{{ item.submittedFemale }}</td>
+              <td>{{ item.submittedCount }}</td>
               <td><b>{{ item.count }}</b></td>
             </tr>
           </tbody>
@@ -160,26 +168,63 @@ Vue.createApp({
         const name = `${year} - ${className}`;
         const gender = String(s.gender || '').trim().toLowerCase();
         if (!map.has(name)) {
-          map.set(name, { name, year, className, count: 0, male: 0, female: 0 });
+          map.set(name, {
+            name,
+            year,
+            className,
+            count: 0,
+            male: 0,
+            female: 0,
+            submittedMale: 0,
+            submittedFemale: 0,
+            submittedCount: 0
+          });
         }
         const item = map.get(name);
+        const isSubmitted = s.submissionComplete === true;
         item.count++;
 
         if (gender === 'female' || gender === 'f' || gender === 'girl' || gender === 'بنت' || gender === 'انثى' || gender === 'أنثى') {
           item.female++;
+          if (isSubmitted) {
+            item.submittedFemale++;
+            item.submittedCount++;
+          }
         } else if (gender === 'male' || gender === 'm' || gender === 'boy' || gender === 'ولد' || gender === 'ذكر') {
           item.male++;
+          if (isSubmitted) {
+            item.submittedMale++;
+            item.submittedCount++;
+          }
+        } else if (isSubmitted) {
+          item.submittedCount++;
         }
       });
-      return [...map.values()].sort((a,b)=> a.year.localeCompare(b.year,'ar') || a.className.localeCompare(b.className,'ar'));
+      const classOrder = ['يوحنا', 'ابوسيفين', 'أبوسيفين', 'العذراء'];
+      const yearOrder = ['أولى إبتدائي', 'اولى ابتدائي', 'أولى ابتدائي', 'تانية إبتدائي', 'تانية ابتدائي', 'ثانية إبتدائي', 'ثانية ابتدائي', 'ثالثة إبتدائي', 'ثالثة ابتدائي', 'رابعة إبتدائي', 'رابعة ابتدائي', 'خمسة', 'سادسة'];
+      const orderIndex = (list, value) => {
+        const normalized = String(value || '').trim();
+        const index = list.findIndex(item => normalized.includes(item) || item.includes(normalized));
+        return index === -1 ? 999 : index;
+      };
+      return [...map.values()].sort((a,b)=> {
+        const classDiff = orderIndex(classOrder, a.className) - orderIndex(classOrder, b.className);
+        if (classDiff !== 0) return classDiff;
+        const yearDiff = orderIndex(yearOrder, a.year) - orderIndex(yearOrder, b.year);
+        if (yearDiff !== 0) return yearDiff;
+        return a.year.localeCompare(b.year,'ar') || a.className.localeCompare(b.className,'ar');
+      });
     },
     yearClassTotals() {
       return this.yearClassStats.reduce((totals, item) => {
         totals.male += item.male;
         totals.female += item.female;
+        totals.submittedMale += item.submittedMale;
+        totals.submittedFemale += item.submittedFemale;
+        totals.submittedCount += item.submittedCount;
         totals.count += item.count;
         return totals;
-      }, { male: 0, female: 0, count: 0 });
+      }, { male: 0, female: 0, submittedMale: 0, submittedFemale: 0, submittedCount: 0, count: 0 });
     },
     maxActivityCount() { return Math.max(1, ...this.topActivities.map(x => x.count)); },
     maxClassCount() { return Math.max(1, ...this.classStats.map(x => x.count)); },
