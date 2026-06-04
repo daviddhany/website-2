@@ -164,7 +164,7 @@ router.get('/students', requireTeacher, async (req, res) => {
     return res.status(401).json({ error: 'Teacher not found' });
   }
 
-  const { currentTeacher, filter } = result;
+  const { filter } = result;
 
   const andFilters = [];
 
@@ -190,17 +190,6 @@ router.get('/students', requireTeacher, async (req, res) => {
 
   if (req.query.submissionStatus === 'not-submitted') {
     andFilters.push({ submissionComplete: { $ne: true } });
-  }
-
-  // Admin-only filters for quickly finding students by year and class/service.
-  if (currentTeacher.role === 'admin') {
-    if (req.query.studentYear) {
-      andFilters.push({ studentYear: req.query.studentYear });
-    }
-
-    if (req.query.className) {
-      andFilters.push({ className: req.query.className });
-    }
   }
 
   if (andFilters.length) {
