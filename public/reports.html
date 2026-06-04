@@ -66,15 +66,34 @@
       </div>
     </article>
 
-    <article class="card">
+    <article class="card wide-report-card">
       <h2>عدد المسجلين حسب السنة والخدمة</h2>
-      <div class="analytics-list">
-        <div v-for="item in yearClassStats" :key="item.name" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #ddd">
-          <p><b>{{ item.name }}</b></p>
-          <p>👦 أولاد: {{ item.male }}</p>
-          <p>👧 بنات: {{ item.female }}</p>
-          <p>📊 الإجمالي: {{ item.count }}</p>
-        </div>
+      <div class="report-summary">
+        <span>👦 إجمالي الأولاد: <b>{{ yearClassTotals.male }}</b></span>
+        <span>👧 إجمالي البنات: <b>{{ yearClassTotals.female }}</b></span>
+        <span>📊 الإجمالي: <b>{{ yearClassTotals.count }}</b></span>
+      </div>
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>السنة</th>
+              <th>الخدمة</th>
+              <th>أولاد</th>
+              <th>بنات</th>
+              <th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in yearClassStats" :key="item.name">
+              <td>{{ item.year }}</td>
+              <td>{{ item.className }}</td>
+              <td>{{ item.male }}</td>
+              <td>{{ item.female }}</td>
+              <td><b>{{ item.count }}</b></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </article>
 
@@ -139,14 +158,28 @@ Vue.createApp({
         const year = s.studentYear || s.year || 'غير محدد';
         const className = s.className || 'غير محدد';
         const name = `${year} - ${className}`;
-        const gender = (s.gender || '').toLowerCase();
-        if (!map.has(name)) map.set(name,{name,count:0,male:0,female:0});
+        const gender = String(s.gender || '').trim().toLowerCase();
+        if (!map.has(name)) {
+          map.set(name, { name, year, className, count: 0, male: 0, female: 0 });
+        }
         const item = map.get(name);
         item.count++;
-        if (gender.includes('male') || gender.includes('ذكر')) item.male++;
-        else item.female++;
+
+        if (gender === 'female' || gender === 'f' || gender === 'girl' || gender === 'بنت' || gender === 'انثى' || gender === 'أنثى') {
+          item.female++;
+        } else if (gender === 'male' || gender === 'm' || gender === 'boy' || gender === 'ولد' || gender === 'ذكر') {
+          item.male++;
+        }
       });
-      return [...map.values()].sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name,'ar'));
+      return [...map.values()].sort((a,b)=> a.year.localeCompare(b.year,'ar') || a.className.localeCompare(b.className,'ar'));
+    },
+    yearClassTotals() {
+      return this.yearClassStats.reduce((totals, item) => {
+        totals.male += item.male;
+        totals.female += item.female;
+        totals.count += item.count;
+        return totals;
+      }, { male: 0, female: 0, count: 0 });
     },
     maxActivityCount() { return Math.max(1, ...this.topActivities.map(x => x.count)); },
     maxClassCount() { return Math.max(1, ...this.classStats.map(x => x.count)); },

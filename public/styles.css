@@ -2502,3 +2502,47 @@ margin-top:8px!important;
     padding: 8px 10px !important;
   }
 }
+
+/* Reports year/class gender table */
+.wide-report-card {
+  grid-column: 1 / -1;
+}
+.report-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.report-summary span {
+  background: #f7f4ed;
+  border: 1px solid #eadfc7;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.report-table th,
+.report-table td {
+  border: 1px solid #e5dccb;
+  padding: 12px 14px;
+  text-align: center;
+}
+.report-table th {
+  background: #efe4cf;
+  font-weight: 800;
+}
+.report-table tbody tr:nth-child(even) {
+  background: #fbf8f1;
+}
+.report-table td:first-child,
+.report-table td:nth-child(2) {
+  text-align: right;
+}
