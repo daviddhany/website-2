@@ -67,6 +67,18 @@
     </article>
 
     <article class="card">
+      <h2>عدد المسجلين حسب السنة والخدمة</h2>
+      <div class="analytics-list">
+        <div v-for="item in yearClassStats" :key="item.name" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #ddd">
+          <p><b>{{ item.name }}</b></p>
+          <p>👦 أولاد: {{ item.male }}</p>
+          <p>👧 بنات: {{ item.female }}</p>
+          <p>📊 الإجمالي: {{ item.count }}</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
       <h2>حالة التسجيل</h2>
       <div class="analytics-list">
         <p><b>مكتمل:</b> {{ stats.complete }}</p>
@@ -121,8 +133,24 @@ Vue.createApp({
       });
       return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
     },
+    yearClassStats() {
+      const map = new Map();
+      this.students.forEach(s => {
+        const year = s.studentYear || s.year || 'غير محدد';
+        const className = s.className || 'غير محدد';
+        const name = `${year} - ${className}`;
+        const gender = (s.gender || '').toLowerCase();
+        if (!map.has(name)) map.set(name,{name,count:0,male:0,female:0});
+        const item = map.get(name);
+        item.count++;
+        if (gender.includes('male') || gender.includes('ذكر')) item.male++;
+        else item.female++;
+      });
+      return [...map.values()].sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name,'ar'));
+    },
     maxActivityCount() { return Math.max(1, ...this.topActivities.map(x => x.count)); },
     maxClassCount() { return Math.max(1, ...this.classStats.map(x => x.count)); },
+    maxYearClassCount() { return Math.max(1, ...this.yearClassStats.map(x => x.count)); },
     completionRate() { return this.stats.total ? Math.round((this.stats.complete / this.stats.total) * 100) : 0; },
     paymentRate() { return this.stats.total ? Math.round((this.stats.paid / this.stats.total) * 100) : 0; }
   },
