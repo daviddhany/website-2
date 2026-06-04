@@ -184,6 +184,14 @@ router.get('/students', requireTeacher, async (req, res) => {
     andFilters.push({ activities: req.query.activityId });
   }
 
+  if (req.query.submissionStatus === 'submitted') {
+    andFilters.push({ submissionComplete: true });
+  }
+
+  if (req.query.submissionStatus === 'not-submitted') {
+    andFilters.push({ submissionComplete: { $ne: true } });
+  }
+
   if (andFilters.length) {
     filter.$and = andFilters;
   }

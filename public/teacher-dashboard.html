@@ -45,6 +45,16 @@
         </select>
       </label>
 
+      <label>
+        حالة التسليم
+        <select id="submissionFilter">
+          <option value="">كل المخدومين</option>
+          <option value="submitted">Submitted فقط</option>
+          <option value="not-submitted">Not submitted فقط</option>
+        </select>
+      </label>
+
+      <button type="button" onclick="showSubmittedStudents()">عرض Submitted فقط</button>
       <button onclick="loadStudents()">بحث</button>
       <button type="button" class="secondary-action" onclick="clearStudentFilters()">مسح الفلتر</button>
     </div>
@@ -461,12 +471,14 @@ async function togglePaymentConfirmed(id, checked) {
 async function loadStudents() {
   const q = document.getElementById('search').value;
   const activityId = document.getElementById('studentActivityFilter') ? document.getElementById('studentActivityFilter').value : '';
+  const submissionStatus = document.getElementById('submissionFilter') ? document.getElementById('submissionFilter').value : '';
   const rows = document.getElementById('rows');
   rows.innerHTML = '<tr><td colspan="16" class="loading">Loading students...</td></tr>';
 
   const params = new URLSearchParams();
   if (q) params.set('search', q);
   if (activityId) params.set('activityId', activityId);
+  if (submissionStatus) params.set('submissionStatus', submissionStatus);
 
   let students = [];
   try {
@@ -522,10 +534,18 @@ async function loadStudents() {
     </tr>
   `).join('');
 }
+function showSubmittedStudents() {
+  const submissionFilter = document.getElementById('submissionFilter');
+  if (submissionFilter) submissionFilter.value = 'submitted';
+  loadStudents();
+}
+
 function clearStudentFilters() {
   document.getElementById('search').value = '';
   const activityFilter = document.getElementById('studentActivityFilter');
   if (activityFilter) activityFilter.value = '';
+  const submissionFilter = document.getElementById('submissionFilter');
+  if (submissionFilter) submissionFilter.value = '';
   loadStudents();
 }
 
