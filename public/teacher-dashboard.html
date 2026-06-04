@@ -54,6 +54,36 @@
         </select>
       </label>
 
+      <div id="adminStudentFilters" style="display:none;">
+        <label>
+          فلتر السنة
+          <select id="studentYearFilter">
+            <option value="">كل السنوات</option>
+            <option value="اولى إبتدائي">اولى إبتدائي</option>
+            <option value="تانية إبتدائي">تانية إبتدائي</option>
+            <option value="ثالثة إبتدائي">ثالثة إبتدائي</option>
+            <option value="رابعة إبتدائي">رابعة إبتدائي</option>
+            <option value="خمسة إبتدائي">خمسة إبتدائي</option>
+            <option value="سادسة إبتدائي">سادسة إبتدائي</option>
+            <option value="اولى اعدادي">اولى إعدادي</option>
+            <option value="تانية اعدادي">تانية إعدادي</option>
+            <option value="ثالثة اعدادي">ثالثة إعدادي</option>
+          </select>
+        </label>
+
+        <label>
+          فلتر الخدمة
+          <select id="studentClassFilter">
+            <option value="">كل الخدمات</option>
+            <option value="يوحنا">يوحنا</option>
+            <option value="ابوسيفين">ابوسيفين</option>
+            <option value="العذراء">العذراء</option>
+            <option value="خمسة و ستة">خمسة و ستة</option>
+            <option value="إعدادي">إعدادي</option>
+          </select>
+        </label>
+      </div>
+
    <!--   <button type="button" onclick="showSubmittedStudents()">عرض Submitted فقط</button>--->
       <button onclick="loadStudents()">بحث</button>
       <button type="button" class="secondary-action" onclick="clearStudentFilters()">مسح الفلتر</button>
@@ -319,9 +349,14 @@ async function loadMe() {
   document.getElementById('teacherName').textContent =
     currentUser.fullName ? `أهلاً ${currentUser.fullName}` : 'Teacher Dashboard';
 
-  if (currentUser.role !== 'admin') {
+  const adminStudentFilters = document.getElementById('adminStudentFilters');
+
+  if (currentUser.role === 'admin') {
+    if (adminStudentFilters) adminStudentFilters.style.display = 'contents';
+  } else {
     document.getElementById('adminOnly').style.display = 'none';
     document.getElementById('manageTeachersBtn').style.display = 'none';
+    if (adminStudentFilters) adminStudentFilters.style.display = 'none';
   }
 }
 
@@ -472,6 +507,8 @@ async function loadStudents() {
   const q = document.getElementById('search').value;
   const activityId = document.getElementById('studentActivityFilter') ? document.getElementById('studentActivityFilter').value : '';
   const submissionStatus = document.getElementById('submissionFilter') ? document.getElementById('submissionFilter').value : '';
+  const studentYear = document.getElementById('studentYearFilter') ? document.getElementById('studentYearFilter').value : '';
+  const className = document.getElementById('studentClassFilter') ? document.getElementById('studentClassFilter').value : '';
   const rows = document.getElementById('rows');
   rows.innerHTML = '<tr><td colspan="16" class="loading">Loading students...</td></tr>';
 
@@ -479,6 +516,10 @@ async function loadStudents() {
   if (q) params.set('search', q);
   if (activityId) params.set('activityId', activityId);
   if (submissionStatus) params.set('submissionStatus', submissionStatus);
+  if (currentUser && currentUser.role === 'admin') {
+    if (studentYear) params.set('studentYear', studentYear);
+    if (className) params.set('className', className);
+  }
 
   let students = [];
   try {
@@ -546,6 +587,10 @@ function clearStudentFilters() {
   if (activityFilter) activityFilter.value = '';
   const submissionFilter = document.getElementById('submissionFilter');
   if (submissionFilter) submissionFilter.value = '';
+  const yearFilter = document.getElementById('studentYearFilter');
+  if (yearFilter) yearFilter.value = '';
+  const classFilter = document.getElementById('studentClassFilter');
+  if (classFilter) classFilter.value = '';
   loadStudents();
 }
 
@@ -1024,6 +1069,16 @@ async function changeStudentPassword(id) {
 const studentActivityFilter = document.getElementById('studentActivityFilter');
 if (studentActivityFilter) {
   studentActivityFilter.addEventListener('change', loadStudents);
+}
+
+const studentYearFilter = document.getElementById('studentYearFilter');
+if (studentYearFilter) {
+  studentYearFilter.addEventListener('change', loadStudents);
+}
+
+const studentClassFilter = document.getElementById('studentClassFilter');
+if (studentClassFilter) {
+  studentClassFilter.addEventListener('change', loadStudents);
 }
 
 async function start() {
