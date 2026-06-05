@@ -33,6 +33,44 @@ function buildStudentFingerprint({ fullName, birthDate, className, studentYear }
   ].join('|');
 }
 
+
+function normalizeStudentYearValue(value) {
+  if (value === undefined || value === null) return value;
+
+  const text = String(value)
+    .trim()
+    .replace(/^الأولى/, 'اولى')
+    .replace(/^أولى/, 'اولى')
+    .replace(/ابتدائي/g, 'إبتدائي')
+    .replace(/إعدادي/g, 'اعدادي')
+    .replace(/إعدادى/g, 'اعدادي')
+    .replace(/اعدادى/g, 'اعدادي')
+    .replace(/خامسة/g, 'خمسة');
+
+  return text;
+}
+
+function normalizeClassNameValue(value) {
+  if (value === undefined || value === null) return value;
+
+  const text = String(value).trim();
+
+  if (['اعدادي', 'إعدادي', 'اعدادى', 'إعدادى'].includes(text)) return 'إعدادي';
+  if (['ابو سيفين', 'أبو سيفين', 'ابوسيفين'].includes(text)) return 'ابوسيفين';
+  if (['يوحنا الحبيب', 'يوحنا'].includes(text)) return 'يوحنا';
+
+  return text;
+}
+
+function normalizePhoneValue(value) {
+  if (value === undefined || value === null) return value;
+
+  const digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 10 && !digits.startsWith('0')) return `0${digits}`;
+  return digits;
+}
+
 const studentSchema = new mongoose.Schema(
   {
     studentCode: { type: String, required: true, unique: true, trim: true },
@@ -71,18 +109,31 @@ const studentSchema = new mongoose.Schema(
     studentYear: {
       type: String,
       required: true,
+      set: normalizeStudentYearValue,
       enum: [
         'اولى إبتدائي',
+        'أولى إبتدائي',
+        'اولى ابتدائي',
+        'أولى ابتدائي',
         'تانية إبتدائي',
+        'تانية ابتدائي',
         'ثالثة إبتدائي',
+        'ثالثة ابتدائي',
         'رابعة إبتدائي',
+        'رابعة ابتدائي',
         'خمسة إبتدائي',
+        'خامسة إبتدائي',
+        'خمسة ابتدائي',
+        'خامسة ابتدائي',
         'سادسة إبتدائي',
+        'سادسة ابتدائي',
         'اولى اعدادي',
-        'تانية اعدادي',
-        'ثالثة اعدادي',
+        'أولى اعدادي',
         'اولى إعدادي',
+        'أولى إعدادي',
+        'تانية اعدادي',
         'تانية إعدادي',
+        'ثالثة اعدادي',
         'ثالثة إعدادي'
       ]
     },
@@ -162,6 +213,22 @@ const studentSchema = new mongoose.Schema(
 studentSchema.statics.buildFingerprint = buildStudentFingerprint;
 
 studentSchema.pre('validate', function (next) {
+  if (this.className) {
+    this.className = normalizeClassNameValue(this.className);
+  }
+
+  if (this.studentYear) {
+    this.studentYear = normalizeStudentYearValue(this.studentYear);
+  }
+
+  if (this.parentPhone !== undefined) {
+    this.parentPhone = normalizePhoneValue(this.parentPhone);
+  }
+
+  if (this.studentPhone !== undefined) {
+    this.studentPhone = normalizePhoneValue(this.studentPhone);
+  }
+
   if (this.fullName && this.birthDate && this.className && this.studentYear) {
     this.studentFingerprint = buildStudentFingerprint({
       fullName: this.fullName,

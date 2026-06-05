@@ -274,12 +274,14 @@ function cleanStudentUpdateBody(body) {
   if (cleaned.address !== undefined) cleaned.address = String(cleaned.address).trim();
   if (cleaned.parentPhone !== undefined) cleaned.parentPhone = normalizeOptionalPhone(cleaned.parentPhone);
   if (cleaned.studentPhone !== undefined) cleaned.studentPhone = normalizeOptionalPhone(cleaned.studentPhone);
+  if (cleaned.studentYear !== undefined) cleaned.studentYear = normalizeStudentYear(cleaned.studentYear);
+  if (cleaned.className !== undefined) cleaned.className = normalizeClassName(cleaned.className);
 
   return cleaned;
 }
 
 function studentUpdateErrorResponse(err) {
-  console.error('Student update error:', err);
+  console.error('Student update error:', { message: err && err.message, name: err && err.name, code: err && err.code, stack: err && err.stack });
 
   if (err && err.code === 11000) {
     return { status: 400, error: 'يوجد مخدوم آخر بنفس البيانات أو بنفس الكود' };
@@ -296,7 +298,7 @@ function studentUpdateErrorResponse(err) {
     return { status: 400, error: 'بيانات غير صحيحة، حاول تحديث الصفحة ثم كرر المحاولة' };
   }
 
-  return { status: 500, error: 'فشل التعديل' };
+  return { status: 500, error: err && err.message ? err.message : 'فشل التعديل' };
 }
 
 router.put('/students/:id/payment-confirmation', requireTeacher, requireRegistrationOpenForNonAdmin, async (req, res) => {
@@ -349,6 +351,16 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
     }
 
     const body = cleanStudentUpdateBody(req.body || {});
+
+    // ✅ Normalize old data already saved in DB before validation.
+    // Some old records were saved as "أولى إبتدائي" while the model expected "اولى إبتدائي".
+    // Re-assigning here triggers the schema setter/pre-validate normalizer before save.
+    if (student.studentYear) {
+      student.studentYear = normalizeStudentYear(student.studentYear);
+    }
+    if (student.className) {
+      student.className = normalizeClassName(student.className);
+    }
 
     // ✅ Allowed fields only
     const allowedFields = [
