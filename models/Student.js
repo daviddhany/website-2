@@ -40,12 +40,12 @@ function normalizeStudentYearValue(value) {
   const text = String(value)
     .trim()
     .replace(/^الأولى/, 'اولى')
-    .replace(/^أولى/, 'اولى')
-    .replace(/ابتدائي/g, 'إبتدائي')
-    .replace(/إعدادي/g, 'اعدادي')
-    .replace(/إعدادى/g, 'اعدادي')
-    .replace(/اعدادى/g, 'اعدادي')
-    .replace(/خامسة/g, 'خمسة');
+.replace(/^أولى/, 'اولى')
+.replace(/ابتدائي/g, 'إبتدائي')
+.replace(/إعدادي/g, 'اعدادي')
+.replace(/إعدادى/g, 'اعدادي')
+.replace(/اعدادى/g, 'اعدادي')
+.replace(/خامسة/g, 'خمسة');
 
   return text;
 }
