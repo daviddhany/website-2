@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Student = require('../models/Student');
 const Activity = require('../models/Activity');
 const Category = require('../models/Category');
@@ -258,6 +259,46 @@ async function canTeacherAccessStudent(currentTeacher, student) {
   return false;
 }
 
+
+function normalizeOptionalPhone(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 10 && digits[0] !== '0') return `0${digits}`;
+  return digits;
+}
+
+function cleanStudentUpdateBody(body) {
+  const cleaned = { ...body };
+
+  if (cleaned.fullName !== undefined) cleaned.fullName = String(cleaned.fullName).trim();
+  if (cleaned.address !== undefined) cleaned.address = String(cleaned.address).trim();
+  if (cleaned.parentPhone !== undefined) cleaned.parentPhone = normalizeOptionalPhone(cleaned.parentPhone);
+  if (cleaned.studentPhone !== undefined) cleaned.studentPhone = normalizeOptionalPhone(cleaned.studentPhone);
+
+  return cleaned;
+}
+
+function studentUpdateErrorResponse(err) {
+  console.error('Student update error:', err);
+
+  if (err && err.code === 11000) {
+    return { status: 400, error: 'يوجد مخدوم آخر بنفس البيانات أو بنفس الكود' };
+  }
+
+  if (err && err.name === 'ValidationError') {
+    return {
+      status: 400,
+      error: Object.values(err.errors).map((e) => e.message).join('، ')
+    };
+  }
+
+  if (err && err.name === 'CastError') {
+    return { status: 400, error: 'بيانات غير صحيحة، حاول تحديث الصفحة ثم كرر المحاولة' };
+  }
+
+  return { status: 500, error: 'فشل التعديل' };
+}
+
 router.put('/students/:id/payment-confirmation', requireTeacher, requireRegistrationOpenForNonAdmin, async (req, res) => {
   try {
     const currentTeacher = await Teacher.findById(req.session.userId);
@@ -288,8 +329,9 @@ router.put('/students/:id/payment-confirmation', requireTeacher, requireRegistra
 
 router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, async (req, res) => {
   try {
-    const Student = require('../models/Student');
-    const Teacher = require('../models/Teacher');
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'كود المخدوم غير صحيح' });
+    }
 
     const student = await Student.findById(req.params.id);
 
@@ -306,6 +348,8 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
       return res.status(403).json({ error: 'غير مسموح' });
     }
 
+    const body = cleanStudentUpdateBody(req.body || {});
+
     // ✅ Allowed fields only
     const allowedFields = [
       'fullName',
@@ -316,16 +360,20 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
     ];
 
     for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        student[field] = req.body[field];
+      if (body[field] !== undefined) {
+        student[field] = body[field];
       }
     }
 
-    if (req.body.activityIds !== undefined) {
-      const activityIds = Array.isArray(req.body.activityIds) ? req.body.activityIds : [];
-      const validActivities = await Activity.find({ _id: { $in: activityIds }, isActive: true }).select('_id');
+    if (body.activityIds !== undefined) {
+      const activityIds = Array.isArray(body.activityIds) ? body.activityIds : [];
+      const cleanActivityIds = activityIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+      const validActivities = await Activity
+        .find({ _id: { $in: cleanActivityIds }, isActive: true })
+        .select('_id');
+
       const validIds = validActivities.map((activity) => activity._id);
-      const validIdStrings = new Set(validIds.map(String));
 
       student.activities = validIds;
 
@@ -338,10 +386,11 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
 
     await student.save();
 
-    res.json({ message: 'Student updated successfully' });
+    res.json({ message: 'تم حفظ التعديل بنجاح' });
 
   } catch (err) {
-    res.status(500).json({ error: 'فشل التعديل' });
+    const response = studentUpdateErrorResponse(err);
+    res.status(response.status).json({ error: response.error });
   }
 });
 
