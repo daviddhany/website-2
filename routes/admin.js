@@ -317,6 +317,9 @@ router.put('/students/:id/payment-confirmation', requireTeacher, requireRegistra
     }
 
     student.paymentConfirmed = Boolean(req.body.paymentConfirmed);
+    if (!student.submittedAt) {
+      student.submittedAt = new Date();
+    }
     await student.save();
 
     res.json({
@@ -396,6 +399,9 @@ router.put('/students/:id', requireTeacher, requireRegistrationOpenForNonAdmin, 
       );
     }
 
+    if (!student.submittedAt) {
+      student.submittedAt = new Date();
+    }
     await student.save();
 
     res.json({ message: 'تم حفظ التعديل بنجاح' });
@@ -546,6 +552,9 @@ router.put('/students/:id/password', requireTeacher, requireRegistrationOpenForN
     }
 
     student.passwordHash = await bcrypt.hash(newPassword, 12);
+    if (!student.submittedAt) {
+      student.submittedAt = new Date();
+    }
     await student.save();
 
     res.json({ message: 'تم تغيير كلمة سر المخدوم' });

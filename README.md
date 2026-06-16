@@ -1,55 +1,93 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Student = require('./models/Student');
-const Teacher = require('./models/Teacher');
-const { normalizeClassName, normalizeStudentYear } = require('./utils');
+# School Activity Registration App
 
-async function normalizeModel(Model, label) {
-  const docs = await Model.find({});
-  let changed = 0;
+A simple Express + MongoDB website for student activity registration.
 
-  for (const doc of docs) {
-    const beforeClass = doc.className || doc.assignedClass;
-    const beforeYear = doc.studentYear || doc.assignedYear;
-    const afterClass = normalizeClassName(beforeClass);
-    const afterYear = normalizeStudentYear(beforeYear);
+## Features
 
-    let dirty = false;
-    if (doc.className !== undefined && beforeClass !== afterClass) {
-      doc.className = afterClass;
-      dirty = true;
-    }
-    if (doc.assignedClass !== undefined && beforeClass !== afterClass) {
-      doc.assignedClass = afterClass;
-      dirty = true;
-    }
-    if (doc.studentYear !== undefined && beforeYear !== afterYear) {
-      doc.studentYear = afterYear;
-      dirty = true;
-    }
-    if (doc.assignedYear !== undefined && beforeYear !== afterYear) {
-      doc.assignedYear = afterYear;
-      dirty = true;
-    }
+- Student registration
+- Student login with national ID and password
+- Unique national ID validation
+- Automatic student ID generation
+- Gender code: male = B, female = G
+- Class code: John = Y, Philo = S, Mary = M
+- Upload birth certificate and payment proof
+- Activity selection with checkboxes
+- Teacher/admin login
+- Teacher dashboard for all students
+- CSV export
+- Password hashing with bcrypt
+- Session storage in MongoDB
 
-    if (dirty) {
-      await doc.save();
-      changed++;
-    }
-  }
+## Requirements
 
-  console.log(`${label}: normalized ${changed} records`);
-}
+- Node.js
+- MongoDB running locally or a MongoDB Atlas connection string
 
-async function main() {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/school_activity_app';
-  await mongoose.connect(mongoUri);
-  await normalizeModel(Student, 'Students');
-  await normalizeModel(Teacher, 'Teachers');
-  await mongoose.disconnect();
-}
+## Setup
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+3. Edit `.env` if needed:
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/school_activity_app
+SESSION_SECRET=replace-with-a-random-secret-at-least-32-characters
+ADMIN_PHONE=01012345678
+ADMIN_PASSWORD=replace-with-a-strong-admin-password
+```
+
+4. Seed the first teacher/admin and sample activities:
+
+```bash
+npm run seed
+```
+
+The admin login is created from `ADMIN_PHONE` and `ADMIN_PASSWORD` in `.env`. Do not use a default password in production.
+
+5. Start the app:
+
+```bash
+npm start
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+## Student ID Format
+
+```text
+[Gender Code][Class Code]-[Year]-[Number]
+```
+
+Examples:
+
+```text
+BY-2026-0001 = male student in John class
+GS-2026-0001 = female student in Philo class
+BM-2026-0001 = male student in Mary class
+```
+
+## Important Production Notes
+
+Before using this with real student data:
+
+- Use HTTPS.
+- Change SESSION_SECRET.
+- Change the default admin password.
+- Do not expose uploads publicly without access controls.
+- Use a secure MongoDB account and network restrictions.
+- Back up the database regularly.
