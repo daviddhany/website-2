@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>التقارير والتحليلات</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+</head>
+<body>
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title">
+    <h2>التقارير والتحليلات</h2>
+    <p>متابعة أرقام التسجيل والأنشطة والدفع</p>
+  </div>
+  <div class="header-right">
+    <nav class="header-actions">
+      <a href="/c/3a7dcaf0-9901-83ea-b660-7e9e88d19bd8" class="btn-export">Dashboard</a>
+      <button type="button" onclick="logout()" class="btn-logout">Logout</button>
+    </nav>
+    <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+  </div>
+</header>
+
+<main id="reportsApp" v-cloak>
+  <section class="reports-hero card">
+    <div>
+      <p class="portal-kicker">Reports & Analytics</p>
+      <h1>لوحة تحليلات متقدمة</h1>
+      <p>الأرقام بتتحسب مباشرة من بيانات المخدومين والأنشطة الحالية.</p>
+    </div>
+    <button type="button" @click="loadData">تحديث البيانات</button>
+  </section>
+
+  <section v-if="loading" class="card loading">جاري تحميل التقارير...</section>
+  <section v-if="error" class="card error">{{ error }}</section>
+
+  <section v-if="!loading && !error" class="stats-grid">
+    <article class="stat-card"><span>إجمالي المخدومين</span><strong>{{ stats.total }}</strong></article>
+    <article class="stat-card"><span>اكتمل التسجيل</span><strong>{{ stats.complete }}</strong></article>
+    <article class="stat-card"><span>الدفع مؤكد</span><strong>{{ stats.paid }}</strong></article>
+    <article class="stat-card"><span>إجمالي قيمة الأنشطة</span><strong>{{ stats.totalMoney }} ج</strong></article>
+  </section>
+
+  <section v-if="!loading && !error" class="reports-grid">
+    <article class="card">
+      <h2>الأنشطة الأكثر اختيارًا</h2>
+      <div class="bar-list">
+        <div v-for="item in topActivities" :key="item.name" class="bar-row">
+          <span>{{ item.name }}</span>
+          <strong>{{ item.count }}</strong>
+          <div><em :style="{width: percent(item.count, maxActivityCount) + '%'}"></em></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>التوزيع حسب الخدمة</h2>
+      <div class="bar-list">
+        <div v-for="item in classStats" :key="item.name" class="bar-row">
+          <span>{{ item.name }}</span>
+          <strong>{{ item.count }}</strong>
+          <div><em :style="{width: percent(item.count, maxClassCount) + '%'}"></em></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card wide-report-card">
+      <h2>عدد المسجلين حسب السنة والخدمة</h2>
+      <div class="report-summary">
+        <span>👦 إجمالي الأولاد: <b>{{ yearClassTotals.male }}</b></span>
+        <span>👧 إجمالي البنات: <b>{{ yearClassTotals.female }}</b></span>
+        <span>✅ Submitted أولاد: <b>{{ yearClassTotals.submittedMale }}</b></span>
+        <span>✅ Submitted بنات: <b>{{ yearClassTotals.submittedFemale }}</b></span>
+        <span>📊 الإجمالي: <b>{{ yearClassTotals.count }}</b></span>
+      </div>
+      <div class="table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>السنة</th>
+              <th>الخدمة</th>
+              <th>أولاد</th>
+              <th>بنات</th>
+              <th>Submitted أولاد</th>
+              <th>Submitted بنات</th>
+              <th>Submitted إجمالي</th>
+              <th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in yearClassStats" :key="item.name">
+              <td>{{ item.year }}</td>
+              <td>{{ item.className }}</td>
+              <td>{{ item.male }}</td>
+              <td>{{ item.female }}</td>
+              <td>{{ item.submittedMale }}</td>
+              <td>{{ item.submittedFemale }}</td>
+              <td>{{ item.submittedCount }}</td>
+              <td><b>{{ item.count }}</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>حالة التسجيل</h2>
+      <div class="analytics-list">
+        <p><b>مكتمل:</b> {{ stats.complete }}</p>
+        <p><b>غير مكتمل:</b> {{ stats.incomplete }}</p>
+        <p><b>نسبة الاكتمال:</b> {{ completionRate }}%</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>حالة الدفع</h2>
+      <div class="analytics-list">
+        <p><b>مدفوع:</b> {{ stats.paid }}</p>
+        <p><b>غير مؤكد:</b> {{ stats.unpaid }}</p>
+        <p><b>نسبة التأكيد:</b> {{ paymentRate }}%</p>
+      </div>
+    </article>
+  </section>
+</main>
+
+<script src="/public/app.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+Vue.createApp({
+  data() {
+    return {
+      loading: true,
+      error: '',
+      students: []
+    };
+  },
+  computed: {
+    stats() {
+      const total = this.students.length;
+      const complete = this.students.filter(s => s.submissionComplete).length;
+      const paid = this.students.filter(s => s.paymentConfirmed).length;
+      const totalMoney = this.students.reduce((sum, s) => sum + (s.activities || []).reduce((a, x) => a + Number(x.price || 0), 0), 0);
+      return { total, complete, incomplete: total - complete, paid, unpaid: total - paid, totalMoney };
+    },
+    topActivities() {
+      const map = new Map();
+      this.students.forEach(s => (s.activities || []).forEach(a => {
+        const name = a.name || 'بدون اسم';
+        map.set(name, (map.get(name) || 0) + 1);
+      }));
+      return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 10);
+    },
+    classStats() {
+      const map = new Map();
+      this.students.forEach(s => {
+        const name = s.className || 'غير محدد';
+        map.set(name, (map.get(name) || 0) + 1);
+      });
+      return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
+    },
+    yearClassStats() {
+      const map = new Map();
+      this.students.forEach(s => {
+        const year = s.studentYear || s.year || 'غير محدد';
+        const className = s.className || 'غير محدد';
+        const name = `${year} - ${className}`;
+        const gender = String(s.gender || '').trim().toLowerCase();
+        if (!map.has(name)) {
+          map.set(name, {
+            name,
+            year,
+            className,
+            count: 0,
+            male: 0,
+            female: 0,
+            submittedMale: 0,
+            submittedFemale: 0,
+            submittedCount: 0
+          });
+        }
+        const item = map.get(name);
+        const isSubmitted = s.submissionComplete === true;
+        item.count++;
+
+        if (gender === 'female' || gender === 'f' || gender === 'girl' || gender === 'بنت' || gender === 'انثى' || gender === 'أنثى') {
+          item.female++;
+          if (isSubmitted) {
+            item.submittedFemale++;
+            item.submittedCount++;
+          }
+        } else if (gender === 'male' || gender === 'm' || gender === 'boy' || gender === 'ولد' || gender === 'ذكر') {
+          item.male++;
+          if (isSubmitted) {
+            item.submittedMale++;
+            item.submittedCount++;
+          }
+        } else if (isSubmitted) {
+          item.submittedCount++;
+        }
+      });
+      const classOrder = ['يوحنا', 'ابوسيفين', 'أبوسيفين', 'العذراء'];
+      const yearOrder = ['أولى إبتدائي', 'اولى ابتدائي', 'أولى ابتدائي', 'تانية إبتدائي', 'تانية ابتدائي', 'ثانية إبتدائي', 'ثانية ابتدائي', 'ثالثة إبتدائي', 'ثالثة ابتدائي', 'رابعة إبتدائي', 'رابعة ابتدائي', 'خمسة', 'سادسة'];
+      const orderIndex = (list, value) => {
+        const normalized = String(value || '').trim();
+        const index = list.findIndex(item => normalized.includes(item) || item.includes(normalized));
+        return index === -1 ? 999 : index;
+      };
+      return [...map.values()].sort((a,b)=> {
+        const classDiff = orderIndex(classOrder, a.className) - orderIndex(classOrder, b.className);
+        if (classDiff !== 0) return classDiff;
+        const yearDiff = orderIndex(yearOrder, a.year) - orderIndex(yearOrder, b.year);
+        if (yearDiff !== 0) return yearDiff;
+        return a.year.localeCompare(b.year,'ar') || a.className.localeCompare(b.className,'ar');
+      });
+    },
+    yearClassTotals() {
+      return this.yearClassStats.reduce((totals, item) => {
+        totals.male += item.male;
+        totals.female += item.female;
+        totals.submittedMale += item.submittedMale;
+        totals.submittedFemale += item.submittedFemale;
+        totals.submittedCount += item.submittedCount;
+        totals.count += item.count;
+        return totals;
+      }, { male: 0, female: 0, submittedMale: 0, submittedFemale: 0, submittedCount: 0, count: 0 });
+    },
+    maxActivityCount() { return Math.max(1, ...this.topActivities.map(x => x.count)); },
+    maxClassCount() { return Math.max(1, ...this.classStats.map(x => x.count)); },
+    maxYearClassCount() { return Math.max(1, ...this.yearClassStats.map(x => x.count)); },
+    completionRate() { return this.stats.total ? Math.round((this.stats.complete / this.stats.total) * 100) : 0; },
+    paymentRate() { return this.stats.total ? Math.round((this.stats.paid / this.stats.total) * 100) : 0; }
+  },
+  methods: {
+    percent(value, max) { return Math.max(6, Math.round((value / max) * 100)); },
+    async loadData() {
+      this.loading = true;
+      this.error = '';
+      try {
+        this.students = await api('/api/admin/students');
+      } catch (err) {
+        this.error = err.message || 'فشل تحميل التقارير';
+      } finally {
+        this.loading = false;
+      }
+    }
+  },
+async mounted() {
+  try {
+    const user = await api('/api/auth/me');
+
+    if (!user || user.userType !== 'teacher') {
+      location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
+      return;
+    }
+
+    await this.loadData();
+  } catch (err) {
+    console.error(err);
+    this.error = err.message || 'فشل التحقق من تسجيل الدخول';
+    this.loading = false;
+  }
+}}).mount('#reportsApp');
+</script>
+<footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+</body>
+</html>

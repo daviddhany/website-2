@@ -1,0 +1,1121 @@
+<!doctype html> 
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <title>صفحة الخادم</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+</head>
+
+<body>
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title">
+    <h2>مهرجان حبة حنطة</h2>
+    <p id="teacherName">واجهة الخادم</p>
+  </div>
+  <div class="header-right">
+    <nav class="header-actions">
+      <a href="/api/admin/export/students.csv" class="btn-export">Export excel</a>
+      <a href="/c/4b8ecaf0-1002-83ea-b660-8f9e88d19bd9" class="btn-export">Reports</a>
+      <a href="/c/5c9fcaf0-2103-83ea-b660-9a9e88d19bd0" class="btn-export" id="manageTeachersBtn">Manage Teachers</a>
+      <button type="button" onclick="logout()" class="btn-logout">Logout</button>
+    </nav>
+    <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <button type="button" class="collapsible-toggle" data-show="عرض المخدومين" data-hide="إخفاء المخدومين" onclick="toggleSection('studentsSection', this)">عرض المخدومين</button>
+    <div id="studentsSection" class="collapsible-body">
+    <h2>المخدومين</h2>
+
+    <div class="search-panel">
+      <label>
+        بحث
+        <input id="search" placeholder="Name, national ID, or student ID">
+      </label>
+
+      <label>
+        بحث بالنشاط
+        <select id="studentActivityFilter">
+          <option value="">كل الأنشطة</option>
+        </select>
+      </label>
+
+      <label>
+        حالة التسليم
+        <select id="submissionFilter">
+          <option value="">كل المخدومين</option>
+          <option value="submitted">Submitted فقط</option>
+          <option value="not-submitted">Not submitted فقط</option>
+        </select>
+      </label>
+
+      <div id="adminStudentFilters" style="display:none;">
+        <label>
+          فلتر السنة
+          <select id="studentYearFilter">
+            <option value="">كل السنوات</option>
+            <option value="اولى إبتدائي">أولى إبتدائي</option>
+            <option value="تانية إبتدائي">تانية إبتدائي</option>
+            <option value="ثالثة إبتدائي">ثالثة إبتدائي</option>
+            <option value="رابعة إبتدائي">رابعة إبتدائي</option>
+            <option value="خمسة إبتدائي">خمسة إبتدائي</option>
+            <option value="سادسة إبتدائي">سادسة إبتدائي</option>
+            <option value="اولى اعدادي">اولى إعدادي</option>
+            <option value="تانية اعدادي">تانية إعدادي</option>
+            <option value="ثالثة اعدادي">ثالثة إعدادي</option>
+          </select>
+        </label>
+
+        <label>
+          فلتر الخدمة
+          <select id="studentClassFilter">
+            <option value="">كل الخدمات</option>
+            <option value="يوحنا">يوحنا</option>
+            <option value="ابوسيفين">ابوسيفين</option>
+            <option value="العذراء">العذراء</option>
+            <option value="خمسة و ستة">خمسة و ستة</option>
+            <option value="إعدادي">إعدادي</option>
+          </select>
+        </label>
+      </div>
+
+   <!--   <button type="button" onclick="showSubmittedStudents()">عرض Submitted فقط</button>--->
+      <button onclick="loadStudents()">بحث</button>
+      <button type="button" class="secondary-action" onclick="clearStudentFilters()">مسح الفلتر</button>
+    </div>
+
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Birth Date</th>
+            <th>Year</th>
+            <th>Entry Year</th>
+            <th>Class</th>
+          <th>National ID</th>
+            <th>Parent</th>
+            <th>Status</th>
+            <th>تأكيد الدفع</th>
+            <th>الإجمالي</th>
+            <th>Photo</th>
+            <th>Documents</th>
+            <th>Activities</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    </div>
+  </section>
+
+  <section class="card" id="editBox" style="display:none;">
+    <h2>تعديل بيانات المخدوم</h2>
+
+    <form id="editStudentForm">
+      <input type="hidden" name="studentId" id="editStudentId">
+
+      <label>
+        الاسم ثلاثي
+        <input name="fullName" id="editFullName" required>
+      </label>
+
+      <label>
+        رقم ولي الأمر
+        <input name="parentPhone" id="editParentPhone" pattern="\d{11}" maxlength="11" required>
+      </label>
+
+      <label>
+        رقم المخدوم - اختياري
+        <input name="studentPhone" id="editStudentPhone" pattern="\d{11}" maxlength="11">
+      </label>
+
+      <label>
+        العنوان
+        <textarea name="address" id="editAddress" required></textarea>
+      </label>
+
+      <label>
+        تاريخ الميلاد
+        <input name="birthDate" id="editBirthDate" type="date" required>
+      </label>
+
+      
+
+
+
+      <div>
+        <label>الانشطة المختارة</label>
+        <div id="editActivities" class="checkbox-list"></div>
+        <small class="muted">Teacher can update the activities for this student.</small>
+      </div>
+
+      <button>حفظ التعديل</button>
+      <button type="button" onclick="closeEditBox()">إلغاء</button>
+      <p id="editMsg"></p>
+    </form>
+  </section>
+
+  <section class="card">
+    <button type="button" class="collapsible-toggle" data-show="عرض تغيير كلمة السر" data-hide="إخفاء تغيير كلمة السر" onclick="toggleSection('passwordSection', this)">عرض تغيير كلمة السر</button>
+    <div id="passwordSection" class="collapsible-body">
+      <h2>تغيير كلمة السر</h2>
+
+      <form id="passwordForm" class="grid">
+        <label>
+          كلمة السر القديمة
+          <input name="oldPassword" type="password" autocomplete="current-password" required>
+        </label>
+
+        <label>
+          كلمة السر الجديدة
+          <input name="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <label>
+          تأكيد كلمة السر الجديدة
+          <input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+
+        <div class="full-width">
+          <button type="submit">تغيير كلمة السر</button>
+          <p id="passMsg"></p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+
+
+  <section class="card">
+    <button type="button" class="collapsible-toggle" data-show="عرض تقسيم الفرق" data-hide="إخفاء تقسيم الفرق" onclick="toggleSection('teamsSection', this)">عرض تقسيم الفرق</button>
+    <div id="teamsSection" class="collapsible-body">
+    <h2>تقسيم فرق</h2>
+
+    <div class="toolbar">
+      <label>
+        النشاط
+        <select name="activityId" id="teamActivitySelect" required></select>
+      </label>
+            <a id="exportTeamsExcel" href="#" class="btn-export">Export Teams Excel</a>
+      <a id="exportTeamsPdf" href="#" class="btn-export" target="_blank">Export Teams PDF</a>
+    </div>
+
+    <form id="manualTeamForm" class="grid">
+      <p class="muted full-width">
+        اسم الفريق سيتم إنشاؤه تلقائيًا من اسم النشاط + رقم الفريق + اسم الخادم.
+      </p>
+
+      <label>
+        &nbsp;
+        <button>إنشاء فريق تلقائيًا</button>
+      </label>
+    </form>
+
+    <div id="teamBalanceWarning" class="warning-box" style="display:none;"></div>
+    <p id="teamMsg"></p>
+    <div id="teamsList"></div>
+    </div>
+  </section>
+
+  <div id="adminOnly">
+    <section class="card">
+      <button type="button" class="collapsible-toggle" data-show="عرض Categories Menu" data-hide="إخفاء Categories Menu" onclick="toggleSection('categoriesSection', this)">عرض Categories Menu</button>
+      <div id="categoriesSection" class="collapsible-body">
+      <h2>Categories Menu</h2>
+
+      <form id="categoryAdd">
+        <label>
+          Menu / Category Name
+          <input name="name" placeholder="مثال: ألحان / كشافة / رياضة" required>
+        </label>
+
+        <button>Add Menu / Category</button>
+        <p id="categoryMsg"></p>
+      </form>
+
+      <div id="categoryList"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <button type="button" class="collapsible-toggle" data-show="عرض Add Activity" data-hide="إخفاء Add Activity" onclick="toggleSection('addActivitySection', this)">عرض Add Activity</button>
+      <div id="addActivitySection" class="collapsible-body">
+      <h2>Add Activity</h2>
+
+      <form id="activityAdd">
+        <label>
+          Activity Name
+          <input name="name" required>
+        </label>
+
+        <label>
+          Description
+          <input name="description">
+        </label>
+
+        <label>
+          Menu / Category
+          <select name="category" id="activityCategorySelect" required></select>
+        </label>
+
+        <label>
+          Price
+          <input name="price" type="number" min="0" value="10" required>
+        </label>
+
+        <button>Add Activity</button>
+        <p id="addMsg"></p>
+      </form>
+      </div>
+    </section>
+
+    <section class="card">
+      <button type="button" class="collapsible-toggle" data-show="عرض Manage Activities" data-hide="إخفاء Manage Activities" onclick="toggleSection('manageActivitiesSection', this)">عرض Manage Activities</button>
+      <div id="manageActivitiesSection" class="collapsible-body">
+      <h2>Manage Activities</h2>
+      <div id="activityList"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="/public/app.js"></script>
+
+<script>
+let currentUser = null;
+let cachedStudents = [];
+let cachedActivities = [];
+let cachedCategories = [];
+let cachedTeams = [];
+let cachedTeamEligibleStudents = [];
+
+
+function studentStatusHtml(student) {
+  if (student.submissionComplete) {
+    return '<span class="status-pill status-submitted">✅ Submitted</span>';
+  }
+
+  if (!student.studentPhotoPath) {
+    return '<span class="status-pill status-missing">❌ Missing photo</span>';
+  }
+
+  return '<span class="status-pill status-pending">⏳ Pending</span>';
+}
+
+function paymentConfirmedLabel(value) { return value ? '✅ Confirmed' : '❌ Not confirmed'; }
+function yesNo(value) { return value ? 'نعم' : 'لا'; }
+function activityTotal(student) { return (student.activities || []).reduce((sum, a) => sum + Number(a.price || 0), 0); }
+
+function documentHtml(path, label) {
+
+  if (!path) {
+    return `<p>${escapeHtml(label)}: Not uploaded</p>`;
+  }
+
+  const isPdf = path.toLowerCase().endsWith('.pdf');
+
+  if (isPdf) {
+    return `
+      <p>${escapeHtml(label)}:</p>
+      <a href="${escapeAttr(path)}" target="_blank">View PDF</a><br>
+      <a href="${escapeAttr(path)}" download>Download</a>
+    `;
+  }
+
+  return `
+    <p>${escapeHtml(label)}:</p>
+    <a href="${escapeAttr(path)}" target="_blank">
+      <img src="${escapeAttr(path)}" width="120"
+      style="border-radius:8px;border:1px solid #ddd">
+    </a><br>
+
+    <a href="${escapeAttr(path)}" target="_blank">View</a><br>
+    <a href="${escapeAttr(path)}" download>Download</a>
+  `;
+}
+
+async function loadMe() {
+  currentUser = await api('/api/auth/me');
+
+  document.getElementById('teacherName').textContent =
+    currentUser.fullName ? `أهلاً ${currentUser.fullName}` : 'Teacher Dashboard';
+
+  const adminStudentFilters = document.getElementById('adminStudentFilters');
+
+  if (currentUser.role === 'admin') {
+    if (adminStudentFilters) adminStudentFilters.style.display = 'contents';
+  } else {
+    document.getElementById('adminOnly').style.display = 'none';
+    document.getElementById('manageTeachersBtn').style.display = 'none';
+    if (adminStudentFilters) adminStudentFilters.style.display = 'none';
+  }
+}
+
+async function loadCategories() {
+  const categories = await api('/api/categories');
+  cachedCategories = categories;
+
+  const activityCategorySelect = document.getElementById('activityCategorySelect');
+  if (activityCategorySelect) {
+    activityCategorySelect.innerHTML = categories.length
+      ? categories.map(c => `
+        <option value="${escapeAttr(c.name)}">${escapeHtml(c.name)}</option>
+      `).join('')
+      : '<option value="">Add a menu/category first</option>';
+  }
+
+  const categoryList = document.getElementById('categoryList');
+  if (categoryList) {
+    categoryList.innerHTML = categories.map(c => `
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <strong>${escapeHtml(c.name)}</strong>
+        <span class="badge">Menu</span>
+        <button onclick="deleteCategory('${escapeAttr(c._id)}')">Remove</button>
+      </div>
+    `).join('') || '<p class="muted">No menu/categories available. Add one first.</p>';
+  }
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Remove this category?')) return;
+
+  await api('/api/categories/' + id, { method: 'DELETE' });
+  await loadCategories();
+}
+
+async function loadActivities() {
+  const activities = await api('/api/activities');
+  cachedActivities = activities;
+
+  const teamActivitySelect = document.getElementById('teamActivitySelect');
+  teamActivitySelect.innerHTML = activities.map(a => `
+    <option value="${escapeAttr(a._id)}">${escapeHtml(a.name)}</option>
+  `).join('');
+
+  const studentActivityFilter = document.getElementById('studentActivityFilter');
+  if (studentActivityFilter) {
+    const currentValue = studentActivityFilter.value;
+    studentActivityFilter.innerHTML = '<option value="">كل الأنشطة</option>' + activities.map(a => `
+      <option value="${escapeAttr(a._id)}">${escapeHtml(a.name)} - ${escapeHtml(a.category || '')}</option>
+    `).join('');
+    studentActivityFilter.value = currentValue;
+  }
+
+  const activityList = document.getElementById('activityList');
+  if (activityList) {
+    activityList.innerHTML = activities.map(a => `
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <strong>${escapeHtml(a.name)}</strong>
+        <span class="badge">${escapeHtml(a.category || '')}</span>
+        <span class="badge">${Number(a.price || 0)} ج</span>
+        <button onclick="deleteActivity('${escapeAttr(a._id)}')">Remove</button>
+      </div>
+    `).join('');
+  }
+}
+
+async function deleteActivity(id) {
+  if (!confirm('Remove this activity?')) return;
+
+  await api('/api/activities/' + id, {
+    method: 'DELETE'
+  });
+
+  loadActivities();
+  loadStudents();
+}
+
+async function deleteStudent(id) {
+  if (!confirm('Are you sure you want to remove this student? This will free the national ID for reuse.')) {
+    return;
+  }
+
+  await api('/api/admin/students/' + id, {
+    method: 'DELETE'
+  });
+
+  loadStudents();
+}
+
+async function renderEditActivities(student) {
+  if (!cachedActivities.length) {
+    cachedActivities = await api('/api/activities');
+  }
+
+  const selected = new Set((student.activities || []).map(activity => typeof activity === 'string' ? activity : activity._id));
+  const box = document.getElementById('editActivities');
+
+  box.innerHTML = cachedActivities.map(activity => `
+    <label class="checkbox-row">
+      <input type="checkbox" name="activityIds" value="${escapeAttr(activity._id)}" ${selected.has(activity._id) ? 'checked' : ''}>
+      ${escapeHtml(activity.name)} - ${escapeHtml(activity.category || '')} - ${Number(activity.price || 0)} ج
+    </label>
+  `).join('') || '<p class="muted">No activities available.</p>';
+}
+
+async function openEditStudent(id) {
+  const student = cachedStudents.find(s => s._id === id);
+  if (!student) return;
+
+  document.getElementById('editBox').style.display = 'block';
+  document.getElementById('editStudentId').value = student._id;
+  document.getElementById('editFullName').value = student.fullName || '';
+  document.getElementById('editParentPhone').value = student.parentPhone || '';
+  document.getElementById('editStudentPhone').value = student.studentPhone || '';
+  document.getElementById('editAddress').value = student.address || '';
+  document.getElementById('editBirthDate').value = student.birthDate
+    ? new Date(student.birthDate).toISOString().slice(0, 10)
+    : '';
+  await renderEditActivities(student);
+
+  document.getElementById('editBox').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeEditBox() {
+  document.getElementById('editBox').style.display = 'none';
+}
+
+async function togglePaymentConfirmed(id, checked) {
+  try {
+    await api('/api/admin/students/' + id + '/payment-confirmation', {
+      method: 'PUT',
+      body: JSON.stringify({ paymentConfirmed: checked })
+    });
+
+    const student = cachedStudents.find(s => s._id === id);
+    if (student) student.paymentConfirmed = checked;
+
+    const status = document.getElementById('paymentStatus-' + id);
+    if (status) status.textContent = paymentConfirmedLabel(checked);
+  } catch (err) {
+    alert(err.message);
+    const checkbox = document.getElementById('paymentCheck-' + id);
+    if (checkbox) checkbox.checked = !checked;
+  }
+}
+
+async function loadStudents() {
+  const q = document.getElementById('search').value;
+  const activityId = document.getElementById('studentActivityFilter') ? document.getElementById('studentActivityFilter').value : '';
+  const submissionStatus = document.getElementById('submissionFilter') ? document.getElementById('submissionFilter').value : '';
+  const studentYear = document.getElementById('studentYearFilter') ? document.getElementById('studentYearFilter').value : '';
+  const className = document.getElementById('studentClassFilter') ? document.getElementById('studentClassFilter').value : '';
+  const rows = document.getElementById('rows');
+  rows.innerHTML = '<tr><td colspan="16" class="loading">Loading students...</td></tr>';
+
+  const params = new URLSearchParams();
+  if (q) params.set('search', q);
+  if (activityId) params.set('activityId', activityId);
+  if (submissionStatus) params.set('submissionStatus', submissionStatus);
+  if (currentUser && currentUser.role === 'admin') {
+    if (studentYear) params.set('studentYear', studentYear);
+    if (className) params.set('className', className);
+  }
+
+  let students = [];
+  try {
+    students = await api('/api/admin/students?' + params.toString());
+    cachedStudents = students;
+  } catch (err) {
+    rows.innerHTML = `<tr><td colspan="16" class="error">${escapeHtml(err.message)}</td></tr>`;
+    return;
+  }
+
+  if (!students.length) {
+    rows.innerHTML = '<tr><td colspan="16" class="muted">لا يوجد مخدومين مطابقين للبحث أو النشاط المختار.</td></tr>';
+    return;
+  }
+
+  rows.innerHTML = students.map(s => `
+    <tr>
+      <td>${escapeHtml(s.studentCode || '')}</td>
+      <td>${escapeHtml(s.fullName || '')}</td>
+      <td>${s.birthDate ? new Date(s.birthDate).toLocaleDateString() : ''}</td>
+      <td>${escapeHtml(s.studentYear || '')}</td>
+      <td>${escapeHtml(s.entryYear || '')}</td>
+      <td>${escapeHtml(s.className || '')}</td>
+      <td>${escapeHtml(s.nationalId || '')}</td>
+      <td>${escapeHtml(s.parentPhone || '')}</td>
+      <td>${studentStatusHtml(s)}</td>
+      <td>
+        <label class="checkbox-row" style="min-width:140px">
+          <input
+            type="checkbox"
+            id="paymentCheck-${escapeAttr(s._id)}"
+            ${s.paymentConfirmed ? 'checked' : ''}
+            onchange="togglePaymentConfirmed('${escapeAttr(s._id)}', this.checked)"
+          >
+          <span id="paymentStatus-${escapeAttr(s._id)}">${paymentConfirmedLabel(s.paymentConfirmed)}</span>
+        </label>
+      </td>
+      <td>${activityTotal(s)} ج</td>
+      <td>
+        ${documentHtml(s.studentPhotoPath, 'Student Photo')}
+      </td>
+      <td>
+        ${documentHtml(s.birthCertificatePath, 'Birth Certificate')}
+      </td>
+      <td>
+        ${(s.activities || []).map(a => `<span class="badge">${escapeHtml(a.name)}</span>`).join('')}
+      </td>
+      <td>
+        <button onclick="openEditStudent('${escapeAttr(s._id)}')">Edit</button>
+        <button onclick="changeStudentPassword('${escapeAttr(s._id)}')">Change Password</button>
+        <button onclick="deleteStudent('${escapeAttr(s._id)}')">Remove Student</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function showSubmittedStudents() {
+  const submissionFilter = document.getElementById('submissionFilter');
+  if (submissionFilter) submissionFilter.value = 'submitted';
+  loadStudents();
+}
+
+function clearStudentFilters() {
+  document.getElementById('search').value = '';
+  const activityFilter = document.getElementById('studentActivityFilter');
+  if (activityFilter) activityFilter.value = '';
+  const submissionFilter = document.getElementById('submissionFilter');
+  if (submissionFilter) submissionFilter.value = '';
+  const yearFilter = document.getElementById('studentYearFilter');
+  if (yearFilter) yearFilter.value = '';
+  const classFilter = document.getElementById('studentClassFilter');
+  if (classFilter) classFilter.value = '';
+  loadStudents();
+}
+
+async function changeStudentPassword(id) {
+  const newPassword = prompt('Enter new student password:');
+  if (!newPassword) return;
+
+  await api('/api/admin/students/' + id + '/password', {
+    method: 'PUT',
+    body: JSON.stringify({ newPassword })
+  });
+
+  alert('Student password changed');
+}
+
+
+function activityMatchesStudent(student, activityId) {
+  return (student.activities || []).some(activity => {
+    const id = typeof activity === 'string' ? activity : activity._id;
+    return id === activityId;
+  });
+}
+
+function eligibleStudentsForActivity(activityId) {
+  return cachedTeamEligibleStudents
+    .filter(student => activityMatchesStudent(student, activityId))
+    .sort((a, b) => {
+      const yearCompare = (a.studentYear || '').localeCompare(b.studentYear || '');
+      if (yearCompare) return yearCompare;
+
+      const classCompare = (a.className || '').localeCompare(b.className || '');
+      if (classCompare) return classCompare;
+
+      return (a.fullName || '').localeCompare(b.fullName || '');
+    });
+}
+
+function teamStudentIdsForActivity(activityId) {
+  return new Set(
+    cachedTeams
+      .filter(team => team.activity && team.activity._id === activityId)
+      .flatMap(team => (team.students || []).map(student => student._id))
+  );
+}
+
+function updateExportLinks() {
+  const activityId = document.getElementById('teamActivitySelect').value;
+  const suffix = activityId ? '?activityId=' + encodeURIComponent(activityId) : '';
+  document.getElementById('exportTeamsExcel').href = '/api/teams/export/excel' + suffix;
+  document.getElementById('exportTeamsPdf').href = '/api/teams/export/pdf' + suffix;
+}
+
+function renderBalanceWarning(teams) {
+  const warning = document.getElementById('teamBalanceWarning');
+
+  if (teams.length < 2) {
+    warning.style.display = 'none';
+    warning.textContent = '';
+    return;
+  }
+
+  const counts = teams.map(team => (team.students || []).length);
+  const min = Math.min(...counts);
+  const max = Math.max(...counts);
+
+  if (max - min > 1) {
+    warning.style.display = 'block';
+    warning.textContent = `⚠️ Teams are unbalanced. Smallest team: ${min}, largest team: ${max}.`;
+  } else {
+    warning.style.display = 'none';
+    warning.textContent = '';
+  }
+}
+
+function teamOptionsHtml(currentTeamId = '') {
+  const activityId = document.getElementById('teamActivitySelect').value;
+  const teams = cachedTeams.filter(t => t.activity && t.activity._id === activityId && !t.locked);
+
+  return teams.map(team => `
+    <option value="${team._id}" ${team._id === currentTeamId ? 'selected' : ''}>${escapeHtml(team.name)}</option>
+  `).join('');
+}
+
+function studentChip(student, currentTeamId = '') {
+  const options = teamOptionsHtml(currentTeamId);
+  const removeButton = currentTeamId
+    ? `<button type="button" class="remove-team-btn">Remove</button>`
+    : '';
+
+  return `
+    <div class="student-chip" draggable="true" data-student-id="${student._id}" data-current-team-id="${currentTeamId}">
+      <div class="student-chip-main">
+        <span class="drag-handle" aria-hidden="true">☰</span>
+        <div>
+          <strong>${student.fullName || ''}</strong>
+          <small>${student.studentCode || ''}</small>
+          <small>${student.studentYear || ''} - ${student.className || ''}</small>
+        </div>
+      </div>
+      <div class="mobile-move-row">
+        <select class="move-team-select" aria-label="Move ${student.fullName || 'student'} to team" ${options ? '' : 'disabled'}>
+          <option value="">Move to team...</option>
+          ${options}
+        </select>
+        <button type="button" class="move-team-btn" ${options ? '' : 'disabled'}>Move</button>
+        ${removeButton}
+      </div>
+    </div>
+  `;
+}
+
+function enableTeamMoving() {
+  document.querySelectorAll('.student-chip').forEach(chip => {
+    chip.addEventListener('dragstart', e => {
+      if (e.target.closest('select, button')) {
+        e.preventDefault();
+        return;
+      }
+      e.dataTransfer.setData('studentId', chip.dataset.studentId);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    const button = chip.querySelector('.move-team-btn');
+    const select = chip.querySelector('.move-team-select');
+    if (button && select) {
+      button.addEventListener('click', async () => {
+        const teamId = select.value;
+        if (!teamId) {
+          message('teamMsg', 'Choose a team first.', false);
+          return;
+        }
+        await moveStudentToTeam(chip.dataset.studentId, teamId);
+      });
+    }
+
+    const removeButton = chip.querySelector('.remove-team-btn');
+    if (removeButton) {
+      removeButton.addEventListener('click', async () => {
+        const teamId = chip.dataset.currentTeamId;
+        if (!teamId) return;
+
+        if (!confirm('Remove this student from the team?')) return;
+
+        await removeStudentFromTeam(chip.dataset.studentId, teamId);
+      });
+    }
+  });
+
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('drag-over');
+    });
+
+    zone.addEventListener('drop', async e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const studentId = e.dataTransfer.getData('studentId');
+      const teamId = zone.dataset.teamId;
+
+      if (!studentId || !teamId) return;
+      await moveStudentToTeam(studentId, teamId);
+    });
+  });
+}
+
+async function loadTeamEligibleStudents() {
+  const activityId = document.getElementById('teamActivitySelect').value;
+
+  if (!activityId) {
+    cachedTeamEligibleStudents = [];
+    return;
+  }
+
+  cachedTeamEligibleStudents = await api('/api/teams/eligible-students?activityId=' + encodeURIComponent(activityId));
+}
+
+function renderTeams() {
+  const activityId = document.getElementById('teamActivitySelect').value;
+  const teamsList = document.getElementById('teamsList');
+  const teams = cachedTeams.filter(t => t.activity && t.activity._id === activityId);
+  const eligibleStudents = eligibleStudentsForActivity(activityId);
+  const assignedIds = teamStudentIdsForActivity(activityId);
+  const unassignedStudents = eligibleStudents.filter(student => !assignedIds.has(student._id));
+
+  updateExportLinks();
+  renderBalanceWarning(teams);
+
+  if (!activityId) {
+    teamsList.innerHTML = '<p>No activities available.</p>';
+    return;
+  }
+
+  teamsList.innerHTML = `
+    <div class="team-workspace">
+      <div class="team-card unassigned-card">
+        <h3>Unassigned Students</h3>
+        <p class="muted">On phones, use the Move to Team menu. On desktop, you can also drag students into a team.</p>
+        <div class="chip-list">
+          ${unassignedStudents.map(student => studentChip(student)).join('') || '<p class="muted">All submitted students are assigned.</p>'}
+        </div>
+      </div>
+
+      ${teams.length ? teams.map(team => `
+        <div class="team-card ${team.locked ? 'locked-team' : ''}">
+          <div class="team-title-row">
+            <h3>${escapeHtml(team.name)}</h3>
+            <span class="lock-badge">${team.locked ? '🔒 Locked' : '🔓 Editable'}</span>
+          </div>
+          <p><strong>${(team.students || []).length}</strong> students</p>
+          <div class="drop-zone chip-list" data-team-id="${escapeAttr(team._id)}">
+            ${(team.students || []).map(student => studentChip(student, team._id)).join('') || '<p class="muted">Move students here.</p>'}
+          </div>
+          <div class="team-actions">
+            <button type="button" onclick="toggleTeamLock('${escapeAttr(team._id)}', ${team.locked ? 'false' : 'true'})">
+              ${team.locked ? 'Unlock Team' : 'Lock Team'}
+            </button>
+            <button type="button" onclick="deleteTeam('${escapeAttr(team._id)}')" ${team.locked ? 'disabled' : ''}>Delete Team</button>
+          </div>
+        </div>
+      `).join('') : '<p>No teams created for this activity yet. Create empty teams first, then move students into them.</p>'}
+    </div>
+  `;
+
+  enableTeamMoving();
+}
+
+async function loadTeams() {
+  setLoading('teamMsg', 'Loading teams...');
+  try {
+    await loadTeamEligibleStudents();
+    cachedTeams = await api('/api/teams');
+    clearMessage('teamMsg');
+    renderTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+}
+
+async function moveStudentToTeam(studentId, teamId) {
+  const team = cachedTeams.find(t => t._id === teamId);
+  if (!team) return;
+
+  if (team.locked) {
+    message('teamMsg', 'This team is locked. Unlock it before moving students.', false);
+    return;
+  }
+
+  const newStudentIds = Array.from(new Set([...(team.students || []).map(s => s._id), studentId]));
+
+  setLoading('teamMsg', 'Moving student...');
+  try {
+    await api('/api/teams/' + teamId + '/students', {
+      method: 'PUT',
+      body: JSON.stringify({ studentIds: newStudentIds })
+    });
+
+    message('teamMsg', 'Student moved successfully');
+    await loadTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+}
+
+async function removeStudentFromTeam(studentId, teamId) {
+  const team = cachedTeams.find(t => t._id === teamId);
+  if (!team) return;
+
+  if (team.locked) {
+    message('teamMsg', 'This team is locked. Unlock it before removing students.', false);
+    return;
+  }
+
+  const newStudentIds = (team.students || [])
+    .map(s => s._id)
+    .filter(id => id !== studentId);
+
+  setLoading('teamMsg', 'Removing student...');
+  try {
+    await api('/api/teams/' + teamId + '/students', {
+      method: 'PUT',
+      body: JSON.stringify({ studentIds: newStudentIds })
+    });
+
+    message('teamMsg', 'Student removed from team');
+    await loadTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+}
+
+async function deleteTeam(id) {
+  if (!confirm('Delete this team?')) return;
+
+  setLoading('teamMsg', 'Deleting team...');
+  try {
+    await api('/api/teams/' + id, { method: 'DELETE' });
+    message('teamMsg', 'Team deleted');
+    await loadTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+}
+
+async function toggleTeamLock(id, shouldLock) {
+  setLoading('teamMsg', shouldLock ? 'Locking team...' : 'Unlocking team...');
+  try {
+    await api('/api/teams/' + id + (shouldLock ? '/lock' : '/unlock'), { method: 'PUT' });
+    message('teamMsg', shouldLock ? 'Team locked' : 'Team unlocked');
+    await loadTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+}
+
+document.getElementById('teamActivitySelect').addEventListener('change', async () => {
+  setLoading('teamMsg', 'تحميل المخدومين المتاحين للفريق...');
+  try {
+    await loadTeamEligibleStudents();
+    clearMessage('teamMsg');
+    renderTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+});
+
+const teamGroupSelect = document.getElementById('teamGroupSelect');
+if (teamGroupSelect) {
+  teamGroupSelect.addEventListener('change', renderTeams);
+}
+
+document.getElementById('manualTeamForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const activityId = document.getElementById('teamActivitySelect').value;
+  const body = {
+    activityId,
+    studentIds: []
+  };
+
+  setLoading('teamMsg', 'جاري إنشاء الفريق تلقائيًا...');
+  try {
+    await api('/api/teams', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+
+    message('teamMsg', 'تم إنشاء الفريق باسم تلقائي. انقل المخدومين إليه.');
+    e.target.reset();
+    await loadTeams();
+  } catch (err) {
+    message('teamMsg', err.message, false);
+  }
+});
+
+document.getElementById('editStudentForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  const body = Object.fromEntries(formData);
+  const id = body.studentId;
+  delete body.studentId;
+
+  body.activityIds = formData.getAll('activityIds');
+
+  setLoading('editMsg', 'Saving student changes...');
+  try {
+    await api('/api/admin/students/' + id, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+
+    message('editMsg', 'تم حفظ التعديل');
+    closeEditBox();
+    await loadStudents();
+    await loadTeams();
+  } catch (err) {
+    message('editMsg', err.message, false);
+  }
+});
+
+document.getElementById('passwordForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const form = e.target;
+  const body = Object.fromEntries(new FormData(form));
+
+  if (body.newPassword !== body.confirmPassword) {
+    message('passMsg', 'تأكيد كلمة السر غير مطابق', false);
+    return;
+  }
+
+  delete body.confirmPassword;
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  setLoading('passMsg', 'جاري تغيير كلمة السر...');
+
+  try {
+    await api('/api/auth/teacher/change-password', {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+
+    message('passMsg', 'تم تغيير كلمة السر بنجاح');
+    form.reset();
+  } catch (err) {
+    message('passMsg', err.message || 'فشل تغيير كلمة السر', false);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+
+document.getElementById('categoryAdd').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const body = Object.fromEntries(new FormData(e.target));
+  const submitBtn = e.target.querySelector('button');
+  submitBtn.disabled = true;
+  setLoading('categoryMsg', 'Adding category...');
+
+  try {
+    await api('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+
+    message('categoryMsg', 'Menu / Category added successfully');
+    e.target.reset();
+    await loadCategories();
+  } catch (err) {
+    message('categoryMsg', err.message || 'Could not add category', false);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+document.getElementById('activityAdd').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const body = Object.fromEntries(new FormData(e.target));
+  const submitBtn = e.target.querySelector('button');
+  submitBtn.disabled = true;
+  setLoading('addMsg', 'Adding activity...');
+
+  try {
+    await api('/api/activities', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+
+    message('addMsg', 'Activity added successfully');
+    e.target.reset();
+    await loadActivities();
+  } catch (err) {
+    message('addMsg', err.message || 'Could not add activity', false);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+async function changeStudentPassword(id) {
+  const newPassword = prompt('Enter new student password:');
+  if (!newPassword) return;
+
+  await api('/api/admin/students/' + id + '/password', {
+    method: 'PUT',
+    body: JSON.stringify({ newPassword })
+  });
+
+  alert('Student password changed');
+}
+const studentActivityFilter = document.getElementById('studentActivityFilter');
+if (studentActivityFilter) {
+  studentActivityFilter.addEventListener('change', loadStudents);
+}
+
+const studentYearFilter = document.getElementById('studentYearFilter');
+if (studentYearFilter) {
+  studentYearFilter.addEventListener('change', loadStudents);
+}
+
+const studentClassFilter = document.getElementById('studentClassFilter');
+if (studentClassFilter) {
+  studentClassFilter.addEventListener('change', loadStudents);
+}
+
+async function start() {
+  try {
+    await loadMe();
+  } catch (err) {
+    location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
+    return;
+  }
+
+  try {
+    await loadStudents();
+  } catch (err) {
+    console.error('Students:', err);
+  }
+
+  try {
+    await loadCategories();
+  } catch (err) {
+    console.error('Categories:', err);
+  }
+
+  try {
+    await loadActivities();
+  } catch (err) {
+    console.error('Activities:', err);
+  }
+
+  try {
+    await loadTeams();
+  } catch (err) {
+    console.error('Teams:', err);
+  }
+}
+
+start();
+</script>
+  <footer class="app-footer" dir="ltr">© 2026 David Hany. All rights reserved.</footer>
+</body>
+</html>

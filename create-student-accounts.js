@@ -1,55 +1,147 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
+const express = require('express');
 const bcrypt = require('bcryptjs');
-const Student = require('./models/Student');
+const Teacher = require('../models/Teacher');
+const { requireAdmin } = require('../middleware/auth');
+const { normalizeClassName, normalizeStudentYear } = require('../utils');
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const DEFAULT_PASSWORD = '12345678'; // غيرها قبل التشغيل لو عايز
+const router = express.Router();
 
-// اكتب بيانات المخدومين هنا
-const students = [
-  {
-    studentCode: '24MA001',
-    fullName: 'Example Student Name Four',
-    gender: 'male',
-    className: 'يوحنا',
-    studentYear: 'ثالثة إبتدائي',
-    entryYear: 2024,
-    birthDate: '2016-05-01',
-    parentPhone: '01234567890',
-    studentPhone: '',
-    address: 'Alexandria',
-    paymentMethod: 'servant'
-  }
-];
-
-async function run() {
-  if (!MONGODB_URI) throw new Error('MONGODB_URI is missing');
-
-  await mongoose.connect(MONGODB_URI);
-  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 12);
-
-  for (const s of students) {
-    await Student.updateOne(
-      { studentCode: String(s.studentCode).trim().toUpperCase() },
-      {
-        $setOnInsert: {
-          ...s,
-          studentCode: String(s.studentCode).trim().toUpperCase(),
-          passwordHash,
-          mustChangePassword: true
-        }
-      },
-      { upsert: true, runValidators: true }
-    );
-    console.log('created/skipped:', s.studentCode);
+router.get('/', requireAdmin, async (req, res) => {
+  const search = String(req.query.search || '').trim();
+const filter = { role: { $in: ['admin', 'teacher', 'serviceLeader'] } };
+  if (search) {
+    filter.$or = [
+      { fullName: new RegExp(search, 'i') },
+      { phone: new RegExp(search, 'i') },
+      { assignedClass: new RegExp(search, 'i') },
+      { assignedYear: new RegExp(search, 'i') }
+    ];
   }
 
-  await mongoose.disconnect();
-  console.log('Done');
-}
-
-run().catch(err => {
-  console.error(err);
-  process.exit(1);
+  const teachers = await Teacher.find(filter).select('-passwordHash').sort({ role: 1, assignedClass: 1, assignedYear: 1, fullName: 1 });
+  res.json(teachers);
 });
+
+router.post('/', requireAdmin, async (req, res) => {
+  const {
+    fullName,
+    phone,
+    password,
+    assignedClass,
+    assignedYear,
+    assignedGender,
+    role
+  } = req.body;
+
+  const teacherRole = ['admin', 'serviceLeader', 'teacher'].includes(role) ? role : 'teacher';
+
+  if (!fullName || !phone || !password) {
+    return res.status(400).json({
+      error: 'من فضلك أكمل بيانات المستخدم'
+    });
+  }
+
+  if (teacherRole !== 'admin' && (!assignedClass || !assignedGender || (teacherRole === 'teacher' && !assignedYear))) {
+    return res.status(400).json({
+      error: 'من فضلك أكمل بيانات الخادم'
+    });
+  }
+
+  const normalizedAssignedClass = teacherRole === 'admin' ? undefined : normalizeClassName(assignedClass);
+  const normalizedAssignedYear = teacherRole === 'teacher' && assignedYear ? normalizeStudentYear(assignedYear) : undefined;
+
+  if (!/^\d{11}$/.test(phone)) {
+    return res.status(400).json({
+      error: 'رقم تليفون الخادم يجب أن يكون 11 رقم'
+    });
+  }
+
+  const allowedClasses = [
+    'خمسة و ستة',
+    'إعدادي',
+    'اعدادي',
+    'يوحنا',
+    'ابوسيفين',
+    'العذراء'
+  ];
+
+  if (teacherRole !== 'admin' && !allowedClasses.includes(normalizedAssignedClass)) {
+    return res.status(400).json({ error: 'الخدمة غير صحيحة' });
+  }
+
+  const allowedYears = [
+    'اولى إبتدائي',
+    'تانية إبتدائي',
+    'ثالثة إبتدائي',
+    'رابعة إبتدائي',
+    'خمسة إبتدائي',
+    'سادسة إبتدائي',
+    'اولى اعدادي',
+    'تانية اعدادي',
+    'ثالثة اعدادي'
+  ];
+
+  if (teacherRole === 'teacher' && !allowedYears.includes(normalizedAssignedYear)) {
+    return res.status(400).json({ error: 'السنة غير صحيحة' });
+  }
+
+  if (teacherRole !== 'admin' && !['male', 'female'].includes(assignedGender)) {
+    return res.status(400).json({ error: 'النوع غير صحيح' });
+  }
+
+  const exists = await Teacher.findOne({ phone });
+
+  if (exists) {
+    return res.status(409).json({
+      error: 'رقم تليفون الخادم موجود بالفعل'
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const teacherData = {
+    fullName,
+    phone,
+    passwordHash,
+    role: teacherRole
+  };
+
+  if (teacherRole !== 'admin') {
+    teacherData.assignedClass = normalizedAssignedClass;
+    teacherData.assignedYear = normalizedAssignedYear;
+    teacherData.assignedGender = assignedGender;
+  }
+
+  const teacher = await Teacher.create(teacherData);
+
+  res.status(201).json({
+    message: 'تم إنشاء الخادم',
+    teacher: {
+      id: teacher._id,
+      fullName: teacher.fullName,
+      phone: teacher.phone,
+      assignedClass: teacher.assignedClass,
+      assignedYear: teacher.assignedYear,
+      assignedGender: teacher.assignedGender,
+      role: teacher.role
+    }
+  });
+});
+
+router.delete('/:id', requireAdmin, async (req, res) => {
+  const teacher = await Teacher.findById(req.params.id);
+
+  if (!teacher) {
+    return res.status(404).json({ error: 'المستخدم غير موجود' });
+  }
+
+  if (!['teacher', 'serviceLeader'].includes(teacher.role)) {
+    return res.status(403).json({ error: 'لا يمكن حذف الأدمن من هنا' });
+  }
+
+  await Teacher.deleteOne({ _id: teacher._id });
+
+  res.json({ message: 'تم حذف المستخدم' });
+});
+
+module.exports = router;

@@ -1,0 +1,357 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <title>صفحة الخادم</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="icon" href="/public/logo-left.png" type="image/png">
+</head>
+
+<body>
+<header class="site-header">
+  <a href="/" class="logo-link"><img src="/public/logo-left.png" class="header-logo" alt="Logo"></a>
+  <div class="header-title"><h2>إدارة الخدام</h2></div>
+  <div class="header-right">
+    <nav class="header-actions">
+      <a href="/c/3a7dcaf0-9901-83ea-b660-7e9e88d19bd8" class="btn-nav">لوحة البيانات</a>
+      <button type="button" onclick="logout()" class="btn-logout">تسجيل خروج</button>
+    </nav>
+    <img src="/public/logo-right.png" class="header-logo" alt="Logo">
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>حالة التسجيل</h2>
+    <p id="registrationStatusText" class="muted">جاري تحميل حالة التسجيل...</p>
+    <label>
+      وقت الإغلاق التلقائي اختياري
+      <input id="registrationClosesAt" type="datetime-local">
+    </label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button type="button" id="toggleRegistrationBtn">جاري التحميل...</button>
+      <button type="button" id="saveAutoCloseBtn">حفظ وقت الإغلاق التلقائي</button>
+    </div>
+    <p class="muted">عند الإغلاق: تسجيل المخدومين يقف، تكوين/تعديل الفرق يقف، والخادم يقدر يشاهد البيانات فقط.</p>
+    <p id="registrationMsg"></p>
+  </section>
+
+  <section class="card">
+    <h2>إضافة مستخدم</h2>
+
+    <form id="teacherForm">
+      <label>
+        اسم المستخدم
+        <input name="fullName" required>
+      </label>
+
+      <label>
+  رقم التليفون
+  <input name="phone" required pattern="\d{11}" maxlength="11" placeholder="11 رقم">
+  </label>
+
+      <label>
+        كلمة السر
+        <input name="password" type="password" required>
+      </label>
+
+      <label>
+        الدور
+        <select name="role" id="teacherRole" required>
+          <option value="teacher">خادم</option>
+          <option value="serviceLeader">أمين خدمة</option>
+          <option value="admin">أدمن</option>
+        </select>
+      </label>
+
+      <label>
+        الخدمة
+        <select name="assignedClass" required>
+          <option value="">اختر الخدمة</option>
+          <option value="يوحنا">يوحنا</option>
+          <option value="ابوسيفين">ابوسيفين</option>
+          <option value="العذراء">العذراء</option>
+          <option value="خمسة و ستة">خمسة و ستة</option>
+          <option value="إعدادي">إعدادي</option>
+
+        </select>
+      </label>
+
+      <label>
+        السنة
+        <select name="assignedYear" id="assignedYear" required>
+  <option value="">اختر السنة</option>
+  <option value="اولى إبتدائي">اولى إبتدائي</option>
+  <option value="تانية إبتدائي">تانية إبتدائي</option>
+  <option value="ثالثة إبتدائي">ثالثة إبتدائي</option>
+  <option value="رابعة إبتدائي">رابعة إبتدائي</option>
+  <option value="خمسة إبتدائي">خمسة إبتدائي</option>
+  <option value="سادسة إبتدائي">سادسة إبتدائي</option>
+  <option value="اولى اعدادي">اولى اعدادي</option>
+  <option value="تانية اعدادي">تانية اعدادي</option>
+  <option value="ثالثة اعدادي">ثالثة اعدادي</option>
+</select>
+      </label>
+<label>
+  النوع
+  <select name="assignedGender" required>
+    <option value="">اختر النوع</option>
+    <option value="male">بنين</option>
+    <option value="female">بنات</option>
+  </select>
+</label>
+      <button>إضافة المستخدم</button>
+      <p id="msg"></p>
+    </form>
+  </section>
+
+  <section class="card">
+    <button type="button" class="collapsible-toggle" data-show="عرض الخدام وأمناء الخدمة الحاليين" data-hide="إخفاء الخدام وأمناء الخدمة الحاليين" onclick="toggleSection('teachersListSection', this)">عرض الخدام وأمناء الخدمة الحاليين</button>
+    <div id="teachersListSection" class="collapsible-body">
+    <h2>الخدام وأمناء الخدمة الحاليين</h2>
+    <label>
+      بحث
+      <input id="teacherSearch" placeholder="ابحث بالاسم، التليفون، الخدمة، أو السنة">
+    </label>
+    <button type="button" onclick="loadTeachers()">بحث</button>
+    <div id="teachers"></div>
+    </div>
+  </section>
+</main>
+
+<script src="/public/app.js"></script>
+
+<script>
+
+
+function isoToLocalDatetimeValue(isoValue) {
+  if (!isoValue) return '';
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function localDatetimeValueToIso(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+async function loadRegistrationStatus() {
+  const btn = document.getElementById('toggleRegistrationBtn');
+  const statusText = document.getElementById('registrationStatusText');
+  const closesAtInput = document.getElementById('registrationClosesAt');
+
+  if (!btn || !statusText) return;
+
+  try {
+    const settings = await api('/api/admin/registration-status');
+
+    btn.dataset.registrationOpen = settings.registrationOpen ? 'true' : 'false';
+    btn.textContent = settings.registrationOpen ? 'إيقاف التسجيل الآن' : 'فتح التسجيل';
+    btn.style.background = settings.registrationOpen ? '#e53935' : '#4CAF50';
+
+    if (closesAtInput) {
+      closesAtInput.value = isoToLocalDatetimeValue(settings.registrationClosesAt);
+    }
+
+    const closeText = settings.registrationClosesAt
+      ? ` وسيتم إغلاقه تلقائياً في ${new Date(settings.registrationClosesAt).toLocaleString('ar-EG')}.`
+      : '';
+
+    statusText.textContent = settings.registrationOpen
+      ? `التسجيل مفتوح حالياً.${closeText}`
+      : 'التسجيل مغلق حالياً: تسجيل المخدومين والفرق وتعديل الخدام متوقف، والخدام Viewer فقط.';
+  } catch (err) {
+    statusText.textContent = 'فشل تحميل حالة التسجيل.';
+    message('registrationMsg', err.message, false);
+  }
+}
+
+async function saveRegistrationSettings(registrationOpen, keepAutoClose = true) {
+  const closesAtInput = document.getElementById('registrationClosesAt');
+  const registrationClosesAt = keepAutoClose && closesAtInput
+    ? localDatetimeValueToIso(closesAtInput.value)
+    : null;
+
+  return api('/api/admin/registration-status', {
+    method: 'POST',
+    body: JSON.stringify({ registrationOpen, registrationClosesAt })
+  });
+}
+
+const toggleRegistrationBtn = document.getElementById('toggleRegistrationBtn');
+if (toggleRegistrationBtn) {
+  toggleRegistrationBtn.addEventListener('click', async () => {
+    const isOpenNow = toggleRegistrationBtn.dataset.registrationOpen === 'true';
+    const confirmMessage = isOpenNow
+      ? 'هل تريد إيقاف التسجيل الآن؟ كل التسجيلات والفرق وتعديل الخدام سيقف.'
+      : 'هل تريد فتح التسجيل؟';
+
+    if (!confirm(confirmMessage)) return;
+
+    toggleRegistrationBtn.disabled = true;
+    toggleRegistrationBtn.textContent = 'جاري الحفظ...';
+
+    try {
+      const settings = await saveRegistrationSettings(!isOpenNow, !isOpenNow);
+
+      message(
+        'registrationMsg',
+        settings.registrationOpen ? 'تم فتح التسجيل' : 'تم إغلاق التسجيل'
+      );
+
+      await loadRegistrationStatus();
+    } catch (err) {
+      message('registrationMsg', err.message, false);
+    } finally {
+      toggleRegistrationBtn.disabled = false;
+    }
+  });
+}
+
+const saveAutoCloseBtn = document.getElementById('saveAutoCloseBtn');
+if (saveAutoCloseBtn) {
+  saveAutoCloseBtn.addEventListener('click', async () => {
+    saveAutoCloseBtn.disabled = true;
+    saveAutoCloseBtn.textContent = 'جاري الحفظ...';
+
+    try {
+      const settings = await saveRegistrationSettings(true, true);
+      message('registrationMsg', settings.registrationClosesAt ? 'تم حفظ وقت الإغلاق التلقائي' : 'تم فتح التسجيل بدون وقت إغلاق تلقائي');
+      await loadRegistrationStatus();
+    } catch (err) {
+      message('registrationMsg', err.message, false);
+    } finally {
+      saveAutoCloseBtn.disabled = false;
+      saveAutoCloseBtn.textContent = 'حفظ وقت الإغلاق التلقائي';
+    }
+  });
+}
+
+const roleSelect = document.getElementById('teacherRole');
+const yearSelect = document.getElementById('assignedYear');
+function updateYearRequirement() {
+  const classSelect = document.querySelector('[name="assignedClass"]');
+  const genderSelect = document.querySelector('[name="assignedGender"]');
+  const classLabel = classSelect.closest('label');
+  const genderLabel = genderSelect.closest('label');
+
+  if (roleSelect.value === 'admin') {
+    yearSelect.required = false;
+    classSelect.required = false;
+    genderSelect.required = false;
+    yearSelect.closest('label').style.display = 'none';
+    classLabel.style.display = 'none';
+    genderLabel.style.display = 'none';
+    yearSelect.value = '';
+    classSelect.value = '';
+    genderSelect.value = '';
+  } else if (roleSelect.value === 'serviceLeader') {
+    yearSelect.required = false;
+    classSelect.required = true;
+    genderSelect.required = true;
+    yearSelect.closest('label').style.display = 'none';
+    classLabel.style.display = '';
+    genderLabel.style.display = '';
+    yearSelect.value = '';
+  } else {
+    yearSelect.required = true;
+    classSelect.required = true;
+    genderSelect.required = true;
+    yearSelect.closest('label').style.display = '';
+    classLabel.style.display = '';
+    genderLabel.style.display = '';
+  }
+}
+roleSelect.addEventListener('change', updateYearRequirement);
+updateYearRequirement();
+
+async function loadTeachers() {
+  const q = document.getElementById('teacherSearch') ? document.getElementById('teacherSearch').value : '';
+  const teachers = await api('/api/teachers?search=' + encodeURIComponent(q));
+
+  document.getElementById('teachers').innerHTML = teachers.map(t => `
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ddd;padding:10px 0;">
+      <div>
+        <strong>${escapeHtml(t.fullName)}</strong><br>
+${escapeHtml(t.phone || '')}<br>      الدور: ${
+  t.role === 'admin'
+    ? 'أدمن / خادم'
+    : t.role === 'serviceLeader'
+      ? 'أمين خدمة'
+      : 'خادم'
+}<br>الخدمة: ${escapeHtml(t.assignedClass || '')} - السنة: ${escapeHtml(t.assignedYear || 'كل السنوات')}
+      </div>
+
+      <button onclick="deleteTeacher('${t._id}')">حذف</button>
+    </div>
+  `).join('');
+}
+
+async function deleteTeacher(id) {
+  if (!confirm('هل تريد حذف هذا المستخدم؟')) return;
+
+  await api('/api/teachers/' + id, {
+    method: 'DELETE'
+  });
+
+  loadTeachers();
+}
+
+document.getElementById('teacherForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const body = Object.fromEntries(new FormData(e.target));
+
+  try {
+    await api('/api/teachers', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+
+    message('msg', 'تم إضافة المستخدم');
+    e.target.reset();
+    loadTeachers();
+  } catch (err) {
+    message('msg', err.message, false);
+  }
+});
+
+const teacherSearchInput = document.getElementById('teacherSearch');
+if (teacherSearchInput) {
+  teacherSearchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      loadTeachers();
+    }
+  });
+}
+
+async function initAdminTeachersPage() {
+  try {
+    const user = await api('/api/auth/me');
+
+    if (!user || user.userType !== 'teacher' || user.role !== 'admin') {
+      location.href = '/c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7';
+      return;
+    }
+
+    await loadRegistrationStatus();
+    await loadTeachers();
+  } catch (err) {
+    console.error(err);
+    message('msg', err.message || 'فشل تحميل الصفحة', false);
+  }
+}
+
+initAdminTeachersPage();
+</script>
+<footer class="app-footer" dir="ltr">
+  © 2026 David Hany. All rights reserved.
+</footer></body>
+</html>

@@ -1,18 +1,28 @@
-Clean URL routes added
-======================
+const express = require('express');
+const router = express.Router();
 
-The website pages now open using ChatGPT-style ID routes:
+router.get('/', (req, res) => {
+  res.json({
+    name: 'Mahragan Registration API',
+    version: '1.1.0',
+    description: 'Documented API for students, teachers, activities, teams, reports, and admin operations.',
+    endpoints: [
+      { method: 'POST', path: '/api/auth/student/login', description: 'Student login' },
+      { method: 'POST', path: '/api/auth/teacher/login', description: 'Teacher/Admin login' },
+      { method: 'POST', path: '/api/auth/logout', description: 'Logout current session' },
+      { method: 'POST', path: '/api/students/register', description: 'Register a new student' },
+      { method: 'GET', path: '/api/students/me', description: 'Get current student profile' },
+      { method: 'GET', path: '/api/admin/students', description: 'Teacher/Admin students list with filters' },
+      { method: 'GET', path: '/api/admin/analytics', description: 'Reports and analytics summary' },
+      { method: 'GET', path: '/api/admin/export/students.csv', description: 'Export students report as CSV' },
+      { method: 'GET', path: '/api/activities', description: 'List activities' },
+      { method: 'POST', path: '/api/activities', description: 'Create activity, admin only' },
+      { method: 'GET', path: '/api/categories', description: 'List categories' },
+      { method: 'POST', path: '/api/categories', description: 'Create category, admin only' },
+      { method: 'GET', path: '/api/teams', description: 'List teams' },
+      { method: 'POST', path: '/api/teams', description: 'Create team' }
+    ]
+  });
+});
 
-Home:              /c/6a1dcaf0-3304-83ea-b660-1e9e88d19bd2
-Register:          /c/7b2ecaf0-4405-83ea-b660-2f9e88d19bd3
-Register success:  /c/8c3fcaf0-5506-83ea-b660-3a9e88d19bd4
-Student login:     /c/9d4acaf0-6607-83ea-b660-4b9e88d19bd5
-Student dashboard: /c/1e5bcaf0-7708-83ea-b660-5c9e88d19bd6
-Teacher login:     /c/2f6ccaf0-8809-83ea-b660-6d9e88d19bd7
-Teacher dashboard: /c/3a7dcaf0-9901-83ea-b660-7e9e88d19bd8
-Reports:           /c/4b8ecaf0-1002-83ea-b660-8f9e88d19bd9
-Manage teachers:   /c/5c9fcaf0-2103-83ea-b660-9a9e88d19bd0
-API docs:          /c/6d0acaf0-3204-83ea-b660-0b9e88d19bd1
-
-Old URLs like /public/teacher-login.html redirect automatically to the new ID URL.
-Static files like /public/styles.css and /public/logo-left.png still work normally.
+module.exports = router;
