@@ -301,7 +301,7 @@ function studentUpdateErrorResponse(err) {
   return { status: 500, error: err && err.message ? err.message : 'فشل التعديل' };
 }
 
-router.put('/students/:id/payment-confirmation', requireTeacher, async (req, res) => {
+router.put('/students/:id/payment-confirmation', requireTeacher, requireRegistrationOpenForNonAdmin, async (req, res) => {
   try {
     const currentTeacher = await Teacher.findById(req.session.userId);
     const student = await Student.findById(req.params.id);
