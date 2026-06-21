@@ -269,7 +269,6 @@ router.put('/me', requireStudent, requireRegistrationOpen, async (req, res) => {
       'parentPhone',
       'studentPhone',
       'address',
-      'paymentConfirmation',
       'birthDate'
     ];
 
